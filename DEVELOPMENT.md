@@ -97,6 +97,24 @@ Downloaded models are stored in the app data folder (`models/`); on macOS that i
 `~/Library/Application Support/io.github.yongjer.katraineo/models`. Models in the Python version's `~/.katrain`
 folder are offered as well.
 
+### End-to-end tests of the app
+
+`e2e/smoke.mjs` uses the installed app through [tauri-driver](https://v2.tauri.app/develop/tests/webdriver/)
+(WebDriver): it waits for KataGo, plays a move and waits for the AI's answer, pastes a game and goes to a move, opens
+the settings and the report, and finds a test update (served over https from a test certificate) whose bad signature
+it must refuse. `e2e/webdriver.mjs` is a small WebDriver client on Node's `fetch`, so it needs no packages.
+
+CI runs it on the Windows and Linux installers of every build (the `e2e` job), with KataGo's CPU build since the
+runners have no GPU, and keeps screenshots, the KataGo log and tauri-driver's output as the `e2e-*` artifacts.
+tauri-driver does not support macOS.
+
+To run it on Linux: `cargo install tauri-driver --locked`, install WebKitWebDriver (`webkit2gtk-driver`, or
+`webkitgtk-webdriver` on Ubuntu 26.04), build the app, and run it with a fresh config folder:
+
+```sh
+XDG_CONFIG_HOME=$(mktemp -d) KATRAINEO_APP=src-tauri/target/release/katraineo KATAGO=resources/KataGo/katago node e2e/smoke.mjs
+```
+
 ## Translations
 
 Translations are the gettext files in `src/i18n`. To improve one, edit the `msgstr` entries of that language's file.

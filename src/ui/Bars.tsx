@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MODE_ANALYZE, MODE_PLAY } from "../core/constants";
-import { t } from "../core/i18n";
+import { t, tf } from "../core/i18n";
 import type { AnalysisToggles } from "../state/config";
 import {
   aiMoveNow,
   analyzeExtra,
+  checkForUpdates,
   copySgf,
   pasteSgf,
   selfplayToEnd,
@@ -27,6 +28,7 @@ import {
   undo,
   useStore,
 } from "../state/store";
+import { platform } from "../state/platform";
 import { MOD_KEY, THEME } from "./theme";
 
 const TOGGLES: [keyof AnalysisToggles, string, string][] = [
@@ -66,6 +68,12 @@ export function TopBar() {
             <MenuItem label="Copy SGF" shortcut={`${MOD_KEY}C`} onClick={() => void copySgf()} />
             <MenuItem label="Paste SGF / link" shortcut={`${MOD_KEY}V`} onClick={() => void pasteSgf()} />
             <MenuItem label="KataGo log" onClick={() => openDialog("log")} />
+            {platform.isDesktop && (
+              <>
+                <hr />
+                <MenuItem label={t("update:check")} onClick={checkUpdatesFromMenu} />
+              </>
+            )}
           </Dropdown>
         )}
       </div>
@@ -86,6 +94,7 @@ export function TopBar() {
           </button>
         ))}
       </div>
+      <UpdateNotice />
       <div className="menu-anchor right">
         <button className="text-button" onClick={() => setExtraOpen((o) => !o)}>
           {t("btn:Analyze")} ▾
@@ -109,6 +118,22 @@ export function TopBar() {
         )}
       </div>
     </header>
+  );
+}
+
+function checkUpdatesFromMenu() {
+  openDialog("update");
+  if (useStore.getState().update.phase !== "available") void checkForUpdates(true);
+}
+
+/** Shown in the top bar once a newer version has been found. */
+function UpdateNotice() {
+  const update = useStore((s) => s.update);
+  if (!update.info || (update.phase !== "available" && update.phase !== "installing" && update.phase !== "error")) return null;
+  return (
+    <button className="update-notice" title={tf("update:available", { version: update.info.version })} onClick={() => openDialog("update")}>
+      {t("update:notice")}
+    </button>
   );
 }
 

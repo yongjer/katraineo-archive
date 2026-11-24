@@ -1170,3 +1170,65 @@ button.primary:disabled {
 .board.selecting {
   cursor: crosshair;
 }
+
+/* updates of the app */
+.update-notice {
+  margin-left: auto;
+  margin-right: 8px;
+  padding: 4px 10px;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--accent);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* the notice pushes the Analyze menu to the right instead */
+.update-notice + .menu-anchor.right {
+  margin-left: 0;
+}
+
+.update-notice:hover {
+  background: var(--accent);
+  color: #1b2430;
+}
+
+.update {
+  min-width: 360px;
+  max-width: 520px;
+}
+
+.update p {
+  margin: 0 0 8px;
+}
+
+.update-version {
+  font-weight: 600;
+}
+
+.update-notes {
+  margin: 8px 0;
+  padding: 8px 10px;
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  border: 1px solid var(--box-light);
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+
+.update-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.update-progress progress {
+  flex: 1;
+  accent-color: var(--accent);
+}
+
+.update-error {
+  color: var(--orange);
+}

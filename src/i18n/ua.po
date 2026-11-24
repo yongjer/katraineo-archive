@@ -1142,3 +1142,46 @@ msgstr "Показувати номери ходів на дошці (перем
 msgid "general:anim_pv_moves"
 msgstr ""
 "Скільки ходів показувати під час анімації послідовності (0 — не анімувати)"
+
+#. updates of the app itself
+msgid "update:title"
+msgstr "Оновлення"
+
+msgid "update:check"
+msgstr "Перевірити оновлення"
+
+msgid "update:checking"
+msgstr "Перевірка оновлень…"
+
+msgid "update:latest"
+msgstr "Katraineo {version} — найновіша версія."
+
+msgid "update:available"
+msgstr "Доступна версія Katraineo {version}."
+
+msgid "update:current"
+msgstr "Встановлено версію {version}."
+
+msgid "update:restart"
+msgstr "Katraineo перезапуститься, щоб завершити оновлення. Спершу збережіть партію."
+
+msgid "update:install"
+msgstr "Оновити й перезапустити"
+
+msgid "update:later"
+msgstr "Пізніше"
+
+msgid "update:downloading"
+msgstr "Завантаження оновлення…"
+
+msgid "update:failed"
+msgstr "Не вдалося оновити: {error}"
+
+msgid "update:check-failed"
+msgstr "Не вдалося перевірити оновлення: {error}"
+
+msgid "update:notice"
+msgstr "Є оновлення"
+
+msgid "check for updates"
+msgstr "Перевіряти оновлення під час запуску"

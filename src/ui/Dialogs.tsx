@@ -3,13 +3,14 @@
 import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { aiRankEstimation, rankLabel } from "../core/ai";
 import { AI_STRATEGIES_AVAILABLE, AI_STRATEGIES_HUMAN_MODEL, PLAYER_AI, TOP_MOVE_OPTIONS, type Player } from "../core/constants";
-import { t } from "../core/i18n";
+import { t, tf } from "../core/i18n";
 import { ENGINE_BACKENDS, resolveEngineBackend } from "../core/engine";
 import { gameReport, REPORT_FILTERS } from "../core/report";
 import type { AppConfig } from "../state/config";
 import { platform } from "../state/platform";
 import {
   analyzeExtra,
+  installUpdate,
   newGame,
   openDialog,
   requestCloseDialog,
@@ -231,6 +232,11 @@ export function SettingsDialog() {
       <Field label={t("load sgf fast analysis")}>
         <input type="checkbox" checked={draft.general.load_fast_analysis} onChange={(ev) => edit((c) => void (c.general.load_fast_analysis = ev.target.checked))} />
       </Field>
+      {platform.isDesktop && (
+        <Field label={t("check for updates")}>
+          <input type="checkbox" checked={draft.general.check_for_updates} onChange={(ev) => edit((c) => void (c.general.check_for_updates = ev.target.checked))} />
+        </Field>
+      )}
 
       <h3>{t("engine settings")}</h3>
       <div className="backend-tabs">
@@ -659,6 +665,46 @@ export function ReanalyzeDialog() {
   );
 }
 
+/** Checking for, and installing, a newer version of the app. */
+export function UpdateDialog() {
+  const { phase, currentVersion, info, progress, error } = useStore((s) => s.update);
+  const installing = phase === "installing";
+  const percent = progress?.total ? Math.min(100, (100 * progress.received) / progress.total) : undefined;
+  const footer = info && (
+    <div className="modal-actions">
+      <button className="text-button" onClick={requestCloseDialog}>
+        {t("update:later")}
+      </button>
+      <button className="primary" disabled={installing} onClick={() => void installUpdate()}>
+        {t("update:install")}
+      </button>
+    </div>
+  );
+  return (
+    <Modal title={t("update:title")} onClose={requestCloseDialog} footer={footer}>
+      <div className="update">
+        {phase === "checking" && <p>{t("update:checking")}</p>}
+        {phase === "latest" && <p>{tf("update:latest", { version: currentVersion })}</p>}
+        {info && (
+          <>
+            <p className="update-version">{tf("update:available", { version: info.version })}</p>
+            <p className="field-hint">{tf("update:current", { version: info.currentVersion })}</p>
+            {info.notes && <div className="update-notes">{info.notes}</div>}
+            <p className="field-hint">{t("update:restart")}</p>
+          </>
+        )}
+        {installing && (
+          <div className="update-progress">
+            <progress max={100} value={percent} />
+            <span>{t("update:downloading")}</span>
+          </div>
+        )}
+        {phase === "error" && <p className="update-error">{tf(info ? "update:failed" : "update:check-failed", { error: error ?? "" })}</p>}
+      </div>
+    </Modal>
+  );
+}
+
 export function Dialogs() {
   const dialog = useStore((s) => s.dialog);
   if (dialog === "reanalyze") return <ReanalyzeDialog />;
@@ -669,5 +715,6 @@ export function Dialogs() {
   if (dialog === "settings") return <SettingsDialog />;
   if (dialog === "ai") return <AiSettingsDialog />;
   if (dialog === "log") return <LogDialog />;
+  if (dialog === "update") return <UpdateDialog />;
   return null;
 }

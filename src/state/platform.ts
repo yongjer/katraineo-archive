@@ -1,6 +1,7 @@
 // Everything that differs between the Tauri desktop app and a plain browser (used for UI development).
 
 import { resolveEngineBackend, type EngineSettings, type EngineTransport } from "../core/engine";
+import packageJson from "../../package.json";
 
 export interface OpenedFile {
   name: string;
@@ -21,6 +22,18 @@ export interface DownloadProgress {
   done: boolean;
   error: string | null;
   path: string | null;
+}
+
+/** A newer version of the app, found by the update check. */
+export interface UpdateInfo {
+  version: string;
+  currentVersion: string;
+  notes: string | null;
+}
+
+export interface UpdateProgress {
+  received: number;
+  total: number | null;
 }
 
 export interface Platform {
@@ -46,6 +59,11 @@ export interface Platform {
   saveTextFile(contents: string, suggestedName: string, path: string | null): Promise<string | null>;
   loadConfig(): Promise<string | null>;
   saveConfig(contents: string): Promise<void>;
+  appVersion(): Promise<string>;
+  /** Ask the release page for a newer version of the app: null when this one is the newest. */
+  checkForUpdate(): Promise<UpdateInfo | null>;
+  /** Download, verify and install the update the last check found, then restart. Only returns (by rejecting) on failure. */
+  installUpdate(onProgress: (p: UpdateProgress) => void): Promise<void>;
 }
 
 type Handlers = Parameters<EngineTransport["setHandlers"]>[0];
@@ -179,6 +197,25 @@ const tauriPlatform: Platform = {
   async saveConfig(contents) {
     const { invoke } = await import("@tauri-apps/api/core");
     await invoke("save_config", { contents });
+  },
+  async appVersion() {
+    const { getVersion } = await import("@tauri-apps/api/app");
+    return getVersion();
+  },
+  async checkForUpdate() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const info = await invoke<{ version: string; current_version: string; notes: string | null } | null>("update_check");
+    return info && { version: info.version, currentVersion: info.current_version, notes: info.notes };
+  },
+  async installUpdate(onProgress) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const { listen } = await import("@tauri-apps/api/event");
+    const stop = await listen<UpdateProgress>("update-progress", (e) => onProgress(e.payload));
+    try {
+      await invoke("update_install");
+    } finally {
+      stop();
+    }
   },
 };
 
@@ -360,6 +397,15 @@ const browserPlatform: Platform = {
     } catch {
       /* storage unavailable */
     }
+  },
+  async appVersion() {
+    return packageJson.version;
+  },
+  async checkForUpdate() {
+    return null; // a browser always loads the current version
+  },
+  async installUpdate() {
+    throw new Error("Updates need the desktop app");
   },
 };
 

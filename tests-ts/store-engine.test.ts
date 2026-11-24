@@ -31,6 +31,8 @@ vi.mock("../src/state/platform", () => ({
     saveConfig: async () => {},
     makeTransport: () => fake,
     transportKind: () => "fake",
+    appVersion: async () => "0.0.0",
+    checkForUpdate: async () => null,
   },
 }));
 

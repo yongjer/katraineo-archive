@@ -1144,3 +1144,46 @@ msgstr "Custom command"
 
 msgid "engine:backend:note"
 msgstr "The selected tab determines the engine used."
+
+#. updates of the app itself
+msgid "update:title"
+msgstr "Updates"
+
+msgid "update:check"
+msgstr "Check for Updates"
+
+msgid "update:checking"
+msgstr "Checking for updates…"
+
+msgid "update:latest"
+msgstr "Katraineo {version} is the latest version."
+
+msgid "update:available"
+msgstr "Katraineo {version} is available."
+
+msgid "update:current"
+msgstr "You have version {version}."
+
+msgid "update:restart"
+msgstr "Katraineo restarts to finish the update. Save your game first."
+
+msgid "update:install"
+msgstr "Update and Restart"
+
+msgid "update:later"
+msgstr "Later"
+
+msgid "update:downloading"
+msgstr "Downloading the update…"
+
+msgid "update:failed"
+msgstr "The update failed: {error}"
+
+msgid "update:check-failed"
+msgstr "Checking for updates failed: {error}"
+
+msgid "update:notice"
+msgstr "Update available"
+
+msgid "check for updates"
+msgstr "Check for updates at startup"

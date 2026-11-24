@@ -1065,3 +1065,46 @@ msgstr "Comando personalizado"
 
 msgid "engine:backend:note"
 msgstr "La pestaña seleccionada determina el motor usado."
+
+#. updates of the app itself
+msgid "update:title"
+msgstr "Actualizaciones"
+
+msgid "update:check"
+msgstr "Buscar actualizaciones"
+
+msgid "update:checking"
+msgstr "Buscando actualizaciones…"
+
+msgid "update:latest"
+msgstr "Katraineo {version} es la versión más reciente."
+
+msgid "update:available"
+msgstr "Katraineo {version} está disponible."
+
+msgid "update:current"
+msgstr "Tienes la versión {version}."
+
+msgid "update:restart"
+msgstr "Katraineo se reinicia para terminar la actualización. Guarda antes tu partida."
+
+msgid "update:install"
+msgstr "Actualizar y reiniciar"
+
+msgid "update:later"
+msgstr "Más tarde"
+
+msgid "update:downloading"
+msgstr "Descargando la actualización…"
+
+msgid "update:failed"
+msgstr "La actualización falló: {error}"
+
+msgid "update:check-failed"
+msgstr "No se pudieron buscar actualizaciones: {error}"
+
+msgid "update:notice"
+msgstr "Actualización disponible"
+
+msgid "check for updates"
+msgstr "Buscar actualizaciones al iniciar"

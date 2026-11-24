@@ -1055,3 +1055,46 @@ msgid "general:anim_pv_moves"
 msgstr ""
 "Сколько ходов показывать при анимации последовательности (0 — не "
 "анимировать)"
+
+#. updates of the app itself
+msgid "update:title"
+msgstr "Обновления"
+
+msgid "update:check"
+msgstr "Проверить обновления"
+
+msgid "update:checking"
+msgstr "Проверка обновлений…"
+
+msgid "update:latest"
+msgstr "Katraineo {version} — последняя версия."
+
+msgid "update:available"
+msgstr "Доступна версия Katraineo {version}."
+
+msgid "update:current"
+msgstr "Установлена версия {version}."
+
+msgid "update:restart"
+msgstr "Katraineo перезапустится, чтобы завершить обновление. Сначала сохраните партию."
+
+msgid "update:install"
+msgstr "Обновить и перезапустить"
+
+msgid "update:later"
+msgstr "Позже"
+
+msgid "update:downloading"
+msgstr "Загрузка обновления…"
+
+msgid "update:failed"
+msgstr "Не удалось обновить: {error}"
+
+msgid "update:check-failed"
+msgstr "Не удалось проверить обновления: {error}"
+
+msgid "update:notice"
+msgstr "Есть обновление"
+
+msgid "check for updates"
+msgstr "Проверять обновления при запуске"

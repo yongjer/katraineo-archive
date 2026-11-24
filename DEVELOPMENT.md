@@ -119,6 +119,44 @@ These are unsigned test builds.
 GitHub's macOS runners are often short of capacity, and it cancels a job that no runner picks up. When that happens to a
 macOS build, `.github/workflows/retry-macos.yml` re-runs the failed jobs, up to three times. Other failures are left alone.
 
+## Releases
+
+The version is recorded in `package.json` (which `tauri.conf.json` reads), `package-lock.json`, `src-tauri/Cargo.toml`
+and `Cargo.lock`. Windows Installer takes only numbers, so the MSI gets the version without its pre-release part
+(`bundle > windows > wix > version`); an MSI replaces any installed version, so pre-releases still update.
+`node scripts/set-version.mjs 2.0.0-alpha.2` sets them all, and `tests-ts/version.test.ts` checks that they agree.
+
+To release:
+
+1. `node scripts/set-version.mjs <version>`, and merge that to `main`.
+2. `git tag v<version>` on that commit and `git push origin v<version>`.
+3. CI builds the installers, signs them for the updater, writes `latest.json`, and creates a **draft** release with all
+   of them. Check it and publish it, **not as a pre-release**: the app reads
+   `releases/latest/download/latest.json`, and GitHub's "latest" release is never a pre-release.
+
+### Updates
+
+The app checks for a newer version when it starts (unless *Check for updates at startup* is turned off in the general
+settings) and from the menu, with tauri-plugin-updater (`src-tauri/src/updates.rs`). It installs the kind of package
+it was installed from: the NSIS installer or the MSI on Windows (in passive mode; it closes the app, KataGo
+included, and starts the new version), the app bundle on macOS, and the AppImage, or the `.deb` with `dpkg -i` after
+asking for an administrator password, on Linux. `scripts/updater-manifest.mjs` writes `latest.json` with a
+`<os>-<arch>-<package>` entry for each.
+
+Updates are signed with a key from `tauri signer generate`. The public key is in `tauri.conf.json`
+(`plugins > updater > pubkey`); the private key and its password are the repository secrets `TAURI_SIGNING_PRIVATE_KEY`
+and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, which only the `release` job of the workflow reads. Without the private key
+no installed copy can be updated again, so keep a copy of it somewhere safe. The signatures carry the version they were
+made for, and the app requires it to match (`requireSignedVersion`), so an older release cannot be offered as a newer
+one.
+
+To try it without releasing anything:
+
+* Run the workflow by hand with `release_preview` (Actions → Tauri app → Run workflow): it builds and signs the
+  installers as for a release, and keeps the signatures and `latest.json` as an artifact.
+* `KATRAINEO_UPDATE_ENDPOINT=https://.../latest.json` makes the app check that manifest instead of the latest release.
+  It must be served over https.
+
 ## Not ported from the Python version
 
 - Downloading KataGo binaries from the settings (set the path to a KataGo you downloaded instead)

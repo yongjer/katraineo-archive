@@ -1,0 +1,60 @@
+name: Bug report
+description: Something in Katraineo does not work as it should
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Load the attached game
+        2. Press F2 and analyze the whole game
+        3. ...
+  - type: input
+    id: version
+    attributes:
+      label: Katraineo version
+      description: The version in the installer's name (for example 2.0.0-alpha.1), or the date of the nightly build.
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (AppImage)
+        - Linux (.deb)
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: engine
+    attributes:
+      label: Engine
+      description: The tab selected under General & Engine Settings (F8).
+      options:
+        - Local engine (the bundled KataGo)
+        - Local engine (a KataGo I downloaded)
+        - Remote engine
+        - Custom command
+  - type: textarea
+    id: log
+    attributes:
+      label: KataGo log
+      description: For problems with the engine or analysis, the lines around the problem from *KataGo log* in the main menu.
+      render: text
+  - type: textarea
+    id: files
+    attributes:
+      label: Game or screenshots
+      description: Attach the SGF or screenshots that show the problem, if any.

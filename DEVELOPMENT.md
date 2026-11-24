@@ -124,7 +124,8 @@ macOS build, `.github/workflows/retry-macos.yml` re-runs the failed jobs, up to 
 The version is recorded in `package.json` (which `tauri.conf.json` reads), `package-lock.json`, `src-tauri/Cargo.toml`
 and `Cargo.lock`. Windows Installer takes only numbers, so the MSI gets the version without its pre-release part
 (`bundle > windows > wix > version`); an MSI replaces any installed version, so pre-releases still update.
-`node scripts/set-version.mjs 2.0.0-alpha.2` sets them all, and `tests-ts/version.test.ts` checks that they agree.
+`node scripts/set-version.mjs 2.0.0-alpha.2` sets them all, and `tests-ts/version.test.ts` checks that they agree. Linux gets
+a `.deb` and an AppImage but no `.rpm`, whose version cannot have a pre-release part.
 
 To release:
 

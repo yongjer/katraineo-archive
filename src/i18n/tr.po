@@ -1117,6 +1117,134 @@ msgstr "{url} adresindeki uzak KataGo'ya bağlanılamadı: {error}"
 msgid "Remote KataGo engine disconnected"
 msgstr "Uzak KataGo motoruyla bağlantı kesildi: {error}"
 
+msgid "Reconnecting to remote KataGo"
+msgstr "Uzak KataGo'ya yeniden bağlanılıyor (deneme {attempt}/{total})..."
+
+msgid "Reconnected to remote KataGo"
+msgstr "Uzak KataGo'ya yeniden bağlanıldı."
+
+msgid "engine:restart:hint"
+msgstr "KataGo'yu yeniden başlatmak için tıklayın."
+
+msgid "settings:unsaved"
+msgstr "Kaydedilmemiş değişiklikler var."
+
+msgid "settings:discard"
+msgstr "Değişiklikleri at"
+
+#. status bar messages
+msgid "AI move failed"
+msgstr "AI hamle yapamadı: {error}"
+
+msgid "Saving failed"
+msgstr "Kaydetme başarısız oldu: {error}"
+
+msgid "Illegal move"
+msgstr "Geçersiz hamle: {reason}"
+
+#. why a move is illegal, shown as {reason} in "Illegal move"
+msgid "Space occupied"
+msgstr "Nokta zaten dolu"
+
+msgid "Ko"
+msgstr "Ko"
+
+msgid "Single stone suicide"
+msgstr "Tek taşla intihar"
+
+msgid "Suicide"
+msgstr "İntihar"
+
+msgid "clipboard empty"
+msgstr "Pano boş."
+
+#. engine status, in the status bar and on the engine indicator
+msgid "engine:ready"
+msgstr "KataGo hazır"
+
+msgid "engine:starting"
+msgstr "KataGo başlatılıyor…"
+
+msgid "engine:pondering"
+msgstr "Sürekli analiz"
+
+msgid "engine:queries"
+msgstr "Kalan sorgu: {count}"
+
+msgid "engine:not-running"
+msgstr "KataGo çalışmıyor"
+
+msgid "KataGo stopped"
+msgstr "KataGo durdu"
+
+msgid "Starting KataGo failed"
+msgstr "KataGo başlatılamadı: {error}"
+
+msgid "KataGo engine failed"
+msgstr "KataGo motoru hata verdi: {error}"
+
+msgid "Engine exited unexpectedly"
+msgstr "Motor beklenmedik bir şekilde sonlandı (durum {code})"
+
+#. errors of the AI, shown as {error} in "AI move failed"
+msgid "No moves found - are you using an older KataGo with no per-move ownership info?"
+msgstr "Hamle bulunamadı - hamle başına bölge bilgisi vermeyen eski bir KataGo sürümü mü kullanıyorsunuz?"
+
+msgid "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+msgstr "Analizde humanPolicy bulunamadı - insan benzeri modeli indirip ayarladınız mı?"
+
+#. navigation buttons below the board; the keyboard shortcut is added after the text
+msgid "nav:previous-mistake"
+msgstr "Önceki hata"
+
+msgid "nav:start"
+msgstr "Başa git"
+
+msgid "nav:back-10"
+msgstr "10 hamle geri"
+
+msgid "nav:previous"
+msgstr "Önceki hamle"
+
+msgid "nav:next"
+msgstr "Sonraki hamle"
+
+msgid "nav:forward-10"
+msgstr "10 hamle ileri"
+
+msgid "nav:end"
+msgstr "Sona git"
+
+msgid "nav:next-mistake"
+msgstr "Sonraki hata"
+
+#. main menu
+msgid "menu:copy-sgf"
+msgstr "SGF'yi kopyala"
+
+msgid "menu:paste-sgf"
+msgstr "SGF / bağlantı yapıştır"
+
+msgid "menu:katago-log"
+msgstr "KataGo günlüğü"
+
+#. tooltip on a player's captured stones
+msgid "player:captures"
+msgstr "Esir alınan taşlar"
+
+#. labels for screen readers
+msgid "a11y:menu"
+msgstr "Menü"
+
+msgid "a11y:close"
+msgstr "Kapat"
+
+msgid "a11y:move-tree"
+msgstr "Hamle ağacı"
+
+msgid "a11y:time-remaining"
+msgstr "Kalan süre"
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

@@ -1103,6 +1103,134 @@ msgstr ""
 msgid "Remote KataGo engine disconnected"
 msgstr "Віддалений рушій KataGo від'єднано: {error}"
 
+msgid "Reconnecting to remote KataGo"
+msgstr "Повторне підключення до віддаленого KataGo (спроба {attempt}/{total})..."
+
+msgid "Reconnected to remote KataGo"
+msgstr "Підключення до віддаленого KataGo відновлено."
+
+msgid "engine:restart:hint"
+msgstr "Натисніть, щоб перезапустити KataGo."
+
+msgid "settings:unsaved"
+msgstr "Є незбережені зміни."
+
+msgid "settings:discard"
+msgstr "Скасувати зміни"
+
+#. status bar messages
+msgid "AI move failed"
+msgstr "Не вдалося отримати хід AI: {error}"
+
+msgid "Saving failed"
+msgstr "Не вдалося зберегти: {error}"
+
+msgid "Illegal move"
+msgstr "Недопустимий хід: {reason}"
+
+#. why a move is illegal, shown as {reason} in "Illegal move"
+msgid "Space occupied"
+msgstr "Пункт уже зайнятий"
+
+msgid "Ko"
+msgstr "Ко"
+
+msgid "Single stone suicide"
+msgstr "Самогубство одиночного каменя"
+
+msgid "Suicide"
+msgstr "Самогубство"
+
+msgid "clipboard empty"
+msgstr "Буфер обміну порожній."
+
+#. engine status, in the status bar and on the engine indicator
+msgid "engine:ready"
+msgstr "KataGo готовий"
+
+msgid "engine:starting"
+msgstr "Запуск KataGo…"
+
+msgid "engine:pondering"
+msgstr "Безперервний аналіз"
+
+msgid "engine:queries"
+msgstr "Залишилося запитів: {count}"
+
+msgid "engine:not-running"
+msgstr "KataGo не запущено"
+
+msgid "KataGo stopped"
+msgstr "KataGo зупинено"
+
+msgid "Starting KataGo failed"
+msgstr "Не вдалося запустити KataGo: {error}"
+
+msgid "KataGo engine failed"
+msgstr "Помилка рушія KataGo: {error}"
+
+msgid "Engine exited unexpectedly"
+msgstr "Рушій несподівано припинив роботу (код {code})"
+
+#. errors of the AI, shown as {error} in "AI move failed"
+msgid "No moves found - are you using an older KataGo with no per-move ownership info?"
+msgstr "Ходів не знайдено — можливо, ви використовуєте стару версію KataGo без даних про територію для кожного ходу?"
+
+msgid "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+msgstr "В аналізі немає humanPolicy — ви завантажили й налаштували «людиноподібну» модель?"
+
+#. navigation buttons below the board; the keyboard shortcut is added after the text
+msgid "nav:previous-mistake"
+msgstr "Попередня помилка"
+
+msgid "nav:start"
+msgstr "На початок"
+
+msgid "nav:back-10"
+msgstr "На 10 ходів назад"
+
+msgid "nav:previous"
+msgstr "Попередній хід"
+
+msgid "nav:next"
+msgstr "Наступний хід"
+
+msgid "nav:forward-10"
+msgstr "На 10 ходів уперед"
+
+msgid "nav:end"
+msgstr "У кінець"
+
+msgid "nav:next-mistake"
+msgstr "Наступна помилка"
+
+#. main menu
+msgid "menu:copy-sgf"
+msgstr "Копіювати SGF"
+
+msgid "menu:paste-sgf"
+msgstr "Вставити SGF / посилання"
+
+msgid "menu:katago-log"
+msgstr "Журнал KataGo"
+
+#. tooltip on a player's captured stones
+msgid "player:captures"
+msgstr "Взяті камені"
+
+#. labels for screen readers
+msgid "a11y:menu"
+msgstr "Меню"
+
+msgid "a11y:close"
+msgstr "Закрити"
+
+msgid "a11y:move-tree"
+msgstr "Дерево ходів"
+
+msgid "a11y:time-remaining"
+msgstr "Залишок часу"
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

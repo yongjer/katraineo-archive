@@ -1019,6 +1019,134 @@ msgstr "Не удалось подключиться к удалённому Kat
 msgid "Remote KataGo engine disconnected"
 msgstr "Удалённый движок KataGo отключён: {error}"
 
+msgid "Reconnecting to remote KataGo"
+msgstr "Повторное подключение к удалённому KataGo (попытка {attempt}/{total})..."
+
+msgid "Reconnected to remote KataGo"
+msgstr "Подключение к удалённому KataGo восстановлено."
+
+msgid "engine:restart:hint"
+msgstr "Нажмите, чтобы перезапустить KataGo."
+
+msgid "settings:unsaved"
+msgstr "Есть несохранённые изменения."
+
+msgid "settings:discard"
+msgstr "Отменить изменения"
+
+#. status bar messages
+msgid "AI move failed"
+msgstr "Не удалось получить ход ИИ: {error}"
+
+msgid "Saving failed"
+msgstr "Не удалось сохранить: {error}"
+
+msgid "Illegal move"
+msgstr "Недопустимый ход: {reason}"
+
+#. why a move is illegal, shown as {reason} in "Illegal move"
+msgid "Space occupied"
+msgstr "Пункт уже занят"
+
+msgid "Ko"
+msgstr "Ко"
+
+msgid "Single stone suicide"
+msgstr "Самоубийство одиночного камня"
+
+msgid "Suicide"
+msgstr "Самоубийство"
+
+msgid "clipboard empty"
+msgstr "Буфер обмена пуст."
+
+#. engine status, in the status bar and on the engine indicator
+msgid "engine:ready"
+msgstr "KataGo готов"
+
+msgid "engine:starting"
+msgstr "Запуск KataGo…"
+
+msgid "engine:pondering"
+msgstr "Непрерывный анализ"
+
+msgid "engine:queries"
+msgstr "Осталось запросов: {count}"
+
+msgid "engine:not-running"
+msgstr "KataGo не запущен"
+
+msgid "KataGo stopped"
+msgstr "KataGo остановлен"
+
+msgid "Starting KataGo failed"
+msgstr "Не удалось запустить KataGo: {error}"
+
+msgid "KataGo engine failed"
+msgstr "Ошибка движка KataGo: {error}"
+
+msgid "Engine exited unexpectedly"
+msgstr "Движок неожиданно завершился (код {code})"
+
+#. errors of the AI, shown as {error} in "AI move failed"
+msgid "No moves found - are you using an older KataGo with no per-move ownership info?"
+msgstr "Ходы не найдены — возможно, вы используете старую версию KataGo без данных о территории для каждого хода?"
+
+msgid "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+msgstr "В анализе нет humanPolicy — вы скачали и настроили «человекоподобную» модель?"
+
+#. navigation buttons below the board; the keyboard shortcut is added after the text
+msgid "nav:previous-mistake"
+msgstr "Предыдущая ошибка"
+
+msgid "nav:start"
+msgstr "В начало"
+
+msgid "nav:back-10"
+msgstr "На 10 ходов назад"
+
+msgid "nav:previous"
+msgstr "Предыдущий ход"
+
+msgid "nav:next"
+msgstr "Следующий ход"
+
+msgid "nav:forward-10"
+msgstr "На 10 ходов вперёд"
+
+msgid "nav:end"
+msgstr "В конец"
+
+msgid "nav:next-mistake"
+msgstr "Следующая ошибка"
+
+#. main menu
+msgid "menu:copy-sgf"
+msgstr "Копировать SGF"
+
+msgid "menu:paste-sgf"
+msgstr "Вставить SGF / ссылку"
+
+msgid "menu:katago-log"
+msgstr "Журнал KataGo"
+
+#. tooltip on a player's captured stones
+msgid "player:captures"
+msgstr "Взятые камни"
+
+#. labels for screen readers
+msgid "a11y:menu"
+msgstr "Меню"
+
+msgid "a11y:close"
+msgstr "Закрыть"
+
+msgid "a11y:move-tree"
+msgstr "Дерево ходов"
+
+msgid "a11y:time-remaining"
+msgstr "Оставшееся время"
+
 msgid "remote engine disconnected popup opening message"
 msgstr ""
 "Соединение с удалённым движком KataGo было потеряно, и его не удалось восстановить автоматически.\n"

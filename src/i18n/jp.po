@@ -1051,6 +1051,134 @@ msgstr "リモート KataGo（{url}）への接続に失敗しました: {error}
 msgid "Remote KataGo engine disconnected"
 msgstr "リモート KataGo エンジンとの接続が切断されました: {error}"
 
+msgid "Reconnecting to remote KataGo"
+msgstr "リモート KataGo に再接続しています（{attempt}/{total} 回目）..."
+
+msgid "Reconnected to remote KataGo"
+msgstr "リモート KataGo に再接続しました。"
+
+msgid "engine:restart:hint"
+msgstr "クリックすると KataGo を再起動します。"
+
+msgid "settings:unsaved"
+msgstr "保存されていない変更があります。"
+
+msgid "settings:discard"
+msgstr "変更を破棄"
+
+#. status bar messages
+msgid "AI move failed"
+msgstr "AI の着手に失敗しました：{error}"
+
+msgid "Saving failed"
+msgstr "保存に失敗しました：{error}"
+
+msgid "Illegal move"
+msgstr "その手は打てません：{reason}"
+
+#. why a move is illegal, shown as {reason} in "Illegal move"
+msgid "Space occupied"
+msgstr "すでに石があります"
+
+msgid "Ko"
+msgstr "コウ（すぐには取り返せません）"
+
+msgid "Single stone suicide"
+msgstr "一子の自殺手"
+
+msgid "Suicide"
+msgstr "自殺手"
+
+msgid "clipboard empty"
+msgstr "クリップボードが空です。"
+
+#. engine status, in the status bar and on the engine indicator
+msgid "engine:ready"
+msgstr "KataGo 準備完了"
+
+msgid "engine:starting"
+msgstr "KataGo を起動しています…"
+
+msgid "engine:pondering"
+msgstr "継続分析中"
+
+msgid "engine:queries"
+msgstr "残りの分析リクエスト：{count}"
+
+msgid "engine:not-running"
+msgstr "KataGo は起動していません"
+
+msgid "KataGo stopped"
+msgstr "KataGo が停止しました"
+
+msgid "Starting KataGo failed"
+msgstr "KataGo の起動に失敗しました：{error}"
+
+msgid "KataGo engine failed"
+msgstr "KataGo エンジンでエラーが発生しました：{error}"
+
+msgid "Engine exited unexpectedly"
+msgstr "予期せずエンジンが止まりました（ステータス {code}）"
+
+#. errors of the AI, shown as {error} in "AI move failed"
+msgid "No moves found - are you using an older KataGo with no per-move ownership info?"
+msgstr "候補手が見つかりません。一手ごとの地の情報を出力しない古い KataGo を使っていませんか？"
+
+msgid "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+msgstr "分析結果に humanPolicy がありません。人間らしいモデルをダウンロードして設定しましたか？"
+
+#. navigation buttons below the board; the keyboard shortcut is added after the text
+msgid "nav:previous-mistake"
+msgstr "前の悪手"
+
+msgid "nav:start"
+msgstr "最初へ"
+
+msgid "nav:back-10"
+msgstr "10 手戻る"
+
+msgid "nav:previous"
+msgstr "1 手戻る"
+
+msgid "nav:next"
+msgstr "1 手進む"
+
+msgid "nav:forward-10"
+msgstr "10 手進む"
+
+msgid "nav:end"
+msgstr "最後へ"
+
+msgid "nav:next-mistake"
+msgstr "次の悪手"
+
+#. main menu
+msgid "menu:copy-sgf"
+msgstr "SGF をコピー"
+
+msgid "menu:paste-sgf"
+msgstr "SGF／リンクを貼り付け"
+
+msgid "menu:katago-log"
+msgstr "KataGo ログ"
+
+#. tooltip on a player's captured stones
+msgid "player:captures"
+msgstr "アゲハマ"
+
+#. labels for screen readers
+msgid "a11y:menu"
+msgstr "メニュー"
+
+msgid "a11y:close"
+msgstr "閉じる"
+
+msgid "a11y:move-tree"
+msgstr "手順ツリー"
+
+msgid "a11y:time-remaining"
+msgstr "残り時間"
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

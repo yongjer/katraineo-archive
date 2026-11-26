@@ -352,4 +352,17 @@ describe("i18n", () => {
     expect(used.size).toBeGreaterThan(150);
     expect([...used].filter((id) => !(id in en))).toEqual([]);
   });
+  it("keeps the placeholders of the English text in every translation", () => {
+    // a misspelt placeholder would be shown as is, and a missing one would hide e.g. the error
+    const placeholders = (s: string) => [...s.matchAll(/\{(\w+)[^}]*\}/g)].map((m) => m[1]).sort();
+    const en = parsePo(readFileSync(join(root, "src/i18n/en.po"), "utf-8"));
+    const wrong: string[] = [];
+    for (const file of readdirSync(join(root, "src/i18n"))) {
+      const catalog = parsePo(readFileSync(join(root, "src/i18n", file), "utf-8"));
+      for (const [id, text] of Object.entries(catalog)) {
+        if (id in en && placeholders(text).join() !== placeholders(en[id]).join()) wrong.push(`${file}: ${id}`);
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
 });

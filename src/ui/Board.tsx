@@ -298,6 +298,7 @@ export function Board() {
     }
 
     return { layers, hintTargets, sx, sy, py, stoneGrid, endResult, nextPlayer };
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- the game changes in place: tick counts its changes
   }, [game, tick, toggles, trainer, theme, config.ui.players, config.trainer.show_move_numbers, teachingStatus, showCoords]);
 
   if (!game || !content) return <div className="board-wrap" />;

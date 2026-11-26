@@ -228,6 +228,7 @@ export class GameNode {
 
   get nodesFromRoot(): GameNode[] {
     const nodes: GameNode[] = [];
+    // oxlint-disable-next-line typescript/no-this-alias -- a walk up from this node
     for (let n: GameNode | null = this; n; n = n.parent) nodes.push(n);
     return nodes.reverse();
   }

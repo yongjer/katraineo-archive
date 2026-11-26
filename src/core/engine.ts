@@ -273,6 +273,8 @@ export class KataGoEngine {
   }
 
   terminateQueries(onlyForNode: GameNode | null = null) {
+    // a copy: terminating a query removes it, and its callback may start new ones, which are not to be terminated
+    // oxlint-disable-next-line unicorn/no-useless-spread
     for (const [id, q] of [...this.queries]) {
       if (onlyForNode === null || q.node === onlyForNode) this.terminateQuery(id);
     }
@@ -393,7 +395,7 @@ export class KataGoEngine {
       initialStones: initialStones.map((m) => [m.player, m.gtp()]),
       initialPlayer: node.initialPlayer,
       moves: moves.map((m) => [m.player, m.gtp()]),
-      overrideSettings: { ...settings, ...(req.extraSettings ?? {}) },
+      overrideSettings: { ...settings, ...req.extraSettings },
       [PONDER_KEY]: req.ponder ?? false,
     };
     if (req.reportEvery !== undefined && req.reportEvery !== null) query.reportDuringSearchEvery = req.reportEvery;

@@ -60,6 +60,7 @@ export function MoveTree() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState<{ node: GameNode; x: number; y: number } | null>(null);
 
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- the game changes in place: tick counts its changes
   const layout = useMemo(() => (game ? layoutTree(game.root) : null), [game, tick]);
   const current = game?.currentNode ?? null;
 

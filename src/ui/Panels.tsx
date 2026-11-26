@@ -1,6 +1,6 @@
 // Right-hand panels: player setup, move statistics, info & notes.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { aiRankEstimation, rankLabel } from "../core/ai";
 import { AI_STRATEGIES_AVAILABLE, PLAYER_AI, PLAYER_HUMAN, PLAYING_NORMAL, PLAYING_TEACHING, type Player, type PlayerType } from "../core/constants";
 import { t } from "../core/i18n";
@@ -114,7 +114,12 @@ export function InfoPanel() {
   const [tab, setTab] = useState<"info" | "details" | "notes">("info");
   const node = game?.currentNode;
   const [note, setNoteText] = useState(node?.note ?? "");
-  useEffect(() => setNoteText(node?.note ?? ""), [node]);
+  const [noteNode, setNoteNode] = useState(node);
+  if (noteNode !== node) {
+    // another move: edit its own note (set while rendering, not in an effect, so its first render shows it already)
+    setNoteNode(node);
+    setNoteText(node?.note ?? "");
+  }
   if (!game || !node) return null;
   const text = node.comment({ details: tab === "details" });
   return (

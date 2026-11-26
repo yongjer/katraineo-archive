@@ -1,0 +1,7 @@
+# Prettier formats the code (TypeScript, JavaScript and CSS); the documents, workflows and settings keep their layout
+*.md
+*.yml
+*.json
+*.html
+src-tauri/
+resources/

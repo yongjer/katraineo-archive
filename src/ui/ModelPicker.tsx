@@ -28,6 +28,7 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
   }, [model, humanlikeModel]);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- refresh sets state only after it has listed the models
     void refresh();
   }, [refresh]);
 

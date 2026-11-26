@@ -34,7 +34,8 @@ mkdirSync(out, { recursive: true });
 // ------------------------------------------------------------------ a fresh config pointing at the test KataGo
 function configDir() {
   if (process.platform === "win32") return join(env.APPDATA ?? join(homedir(), "AppData", "Roaming"), IDENTIFIER);
-  if (!env.XDG_CONFIG_HOME) throw new Error("set XDG_CONFIG_HOME to an empty folder, so the test does not touch your config");
+  if (!env.XDG_CONFIG_HOME)
+    throw new Error("set XDG_CONFIG_HOME to an empty folder, so the test does not touch your config");
   return join(env.XDG_CONFIG_HOME, IDENTIFIER);
 }
 const configPath = join(configDir(), "config.json");
@@ -73,7 +74,9 @@ const driverLogPath = join(out, windows ? "msedgedriver.log" : "tauri-driver.log
 const driverLog = createWriteStream(driverLogPath);
 let driver;
 if (windows) {
-  driver = spawn(env.NATIVE_DRIVER ?? "msedgedriver", [`--port=${PORT}`, "--verbose"], { stdio: ["ignore", "pipe", "pipe"] });
+  driver = spawn(env.NATIVE_DRIVER ?? "msedgedriver", [`--port=${PORT}`, "--verbose"], {
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 } else {
   const driverArgs = ["--port", String(PORT)];
   if (env.NATIVE_DRIVER) driverArgs.push("--native-driver", env.NATIVE_DRIVER);
@@ -81,7 +84,10 @@ if (windows) {
 }
 driver.stdout.pipe(driverLog);
 driver.stderr.pipe(driverLog);
-await until(async () => (await fetch(`http://127.0.0.1:${PORT}/status`)).ok, { what: "the WebDriver server", timeout: 30000 });
+await until(async () => (await fetch(`http://127.0.0.1:${PORT}/status`)).ok, {
+  what: "the WebDriver server",
+  timeout: 30000,
+});
 
 let appProcess = null;
 /** Start the app, and a WebDriver session in it. */
@@ -89,7 +95,8 @@ async function startApp() {
   const url = `http://127.0.0.1:${PORT}`;
   if (!windows) return Session.start(url, app);
   const port = env.E2E_WEBVIEW2_PORT;
-  if (!port) throw new Error("set E2E_WEBVIEW2_PORT to the --remote-debugging-port of the AdditionalBrowserArguments policy");
+  if (!port)
+    throw new Error("set E2E_WEBVIEW2_PORT to the --remote-debugging-port of the AdditionalBrowserArguments policy");
   appProcess = spawn(app, [], { env: childEnv, stdio: "ignore" });
   let exited = null;
   appProcess.on("exit", (code) => (exited = code));
@@ -165,17 +172,23 @@ try {
     await s.clickAt(x, y);
     // (a fast engine may have answered already)
     await until(async () => /Move [12]\b/.test(await infoText()), { what: "Black's move", timeout: 20000 });
-    const info = await until(async () => {
-      const t = await infoText();
-      return /Move 2\b/.test(t) ? t : null;
-    }, { what: "the AI's move", timeout: 180000, interval: 1000 });
+    const info = await until(
+      async () => {
+        const t = await infoText();
+        return /Move 2\b/.test(t) ? t : null;
+      },
+      { what: "the AI's move", timeout: 180000, interval: 1000 },
+    );
     await shot("1-played");
     return info.split("\n")[0];
   });
 
   await step("paste a game", async () => {
     const sgf = readFileSync(new URL("../tests-ts/data/LS vs AG - G4 - English.sgf", import.meta.url), "utf8");
-    await s.execute("return window.__TAURI_INTERNALS__.invoke('plugin:clipboard-manager|write_text', { text: arguments[0] })", sgf);
+    await s.execute(
+      "return window.__TAURI_INTERNALS__.invoke('plugin:clipboard-manager|write_text', { text: arguments[0] })",
+      sgf,
+    );
     await s.press(Keys.Control, "v");
     await until(async () => (await bodyText()).includes("Lee Sedol"), { what: "the game", timeout: 30000 });
     const pasted = Date.now();
@@ -185,10 +198,13 @@ try {
     const reached = Date.now();
     // The info names the move once KataGo has analyzed it ("Analyzing move..." until then). It analyzes the pasted
     // game move by move, and the CPU build takes about a second per move.
-    const info = await until(async () => {
-      const t = await infoText();
-      return /Move 78: W L11/.test(t) ? t : null;
-    }, { what: "the analysis of move 78", timeout: 300000, interval: 1000 });
+    const info = await until(
+      async () => {
+        const t = await infoText();
+        return /Move 78: W L11/.test(t) ? t : null;
+      },
+      { what: "the analysis of move 78", timeout: 300000, interval: 1000 },
+    );
     const secs = (from, to = Date.now()) => `${Math.round((to - from) / 1000)} s`;
     const timing = `went there in ${secs(pasted, reached)}, analyzed ${secs(pasted)} after pasting`;
     await sleep(5000); // some analysis for the screenshot

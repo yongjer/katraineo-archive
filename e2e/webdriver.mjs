@@ -24,7 +24,9 @@ async function call(base, method, path, body) {
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok || json.value?.error) {
-    throw new WebDriverError(`${method} ${path}: ${json.value?.error ?? res.status} ${json.value?.message ?? ""}`.trim());
+    throw new WebDriverError(
+      `${method} ${path}: ${json.value?.error ?? res.status} ${json.value?.message ?? ""}`.trim(),
+    );
   }
   return json.value;
 }
@@ -42,7 +44,8 @@ export async function until(cond, { timeout = 30000, interval = 250, what = "con
     } catch (e) {
       last = e;
     }
-    if (Date.now() - start > timeout) throw new Error(`timed out after ${timeout} ms waiting for ${what}${last ? `: ${last.message}` : ""}`);
+    if (Date.now() - start > timeout)
+      throw new Error(`timed out after ${timeout} ms waiting for ${what}${last ? `: ${last.message}` : ""}`);
     await sleep(interval);
   }
 }
@@ -59,7 +62,9 @@ export class Session {
   /** Attach msedgedriver at `url` to a running WebView2 app with its debugging port at `debuggerAddress` (host:port). */
   static async attach(url, debuggerAddress) {
     const value = await call(url, "POST", "/session", {
-      capabilities: { alwaysMatch: { browserName: "webview2", "ms:edgeChromium": true, "ms:edgeOptions": { debuggerAddress } } },
+      capabilities: {
+        alwaysMatch: { browserName: "webview2", "ms:edgeChromium": true, "ms:edgeOptions": { debuggerAddress } },
+      },
     });
     return new Session(url, value.sessionId);
   }

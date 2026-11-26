@@ -102,6 +102,31 @@ Downloaded models are stored in the app data folder (`models/`); on macOS that i
 `~/Library/Application Support/io.github.yongjer.katraineo/models`. Models in the Python version's `~/.katrain`
 folder are offered as well.
 
+### End-to-end tests of the app
+
+`e2e/smoke.mjs` uses the installed app through WebDriver: it waits for KataGo, plays a move and waits for the AI's
+answer, pastes a game and goes to a move, opens the settings and the report, and finds a test update (served over
+https from a test certificate) whose bad signature it must refuse. `e2e/webdriver.mjs` is a small WebDriver client on
+Node's `fetch`, so it needs no packages.
+
+CI runs it on the Windows and Linux installers of every build (the `e2e` job), with KataGo's CPU build since the
+runners have no GPU, and keeps screenshots, the KataGo log and the driver's output as the `e2e-*` artifacts. macOS is
+not covered: there is no WebDriver for apps on WKWebView.
+
+On Linux, [tauri-driver](https://v2.tauri.app/develop/tests/webdriver/) starts the app through WebKitWebDriver. On
+Windows the test starts the app itself and attaches msedgedriver to it: msedgedriver can no longer start a WebView2 app
+(WebView2 133 and later never open the debugging port it asks for). For that, a WebView2 policy gives the app a
+debugging port, which CI sets under `AdditionalBrowserArguments` (value `katraineo.exe`,
+`--remote-debugging-port=9222`), and the test gets the port in `E2E_WEBVIEW2_PORT`. Leave that policy off on your own
+computer: any program on it can control the app through that port.
+
+To run it on Linux: `cargo install tauri-driver --locked`, install WebKitWebDriver (`webkit2gtk-driver`, or
+`webkitgtk-webdriver` on Ubuntu 26.04), build the app, and run it with a fresh config folder:
+
+```sh
+XDG_CONFIG_HOME=$(mktemp -d) KATRAINEO_APP=src-tauri/target/release/katraineo KATAGO=resources/KataGo/katago node e2e/smoke.mjs
+```
+
 ## Translations
 
 Translations are the gettext files in `src/i18n`. To improve one, edit the `msgstr` entries of that language's file.

@@ -95,3 +95,14 @@ export function parseSavedConfig(text: string | null): AppConfig {
     return defaults;
   }
 }
+
+/** A saved config with something in it that is not a settings object at all (e.g. a damaged file): none of it applies. */
+export function isUnreadableConfig(text: string | null): boolean {
+  if (!text?.trim()) return false;
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return !isObject(parsed);
+  } catch {
+    return true;
+  }
+}

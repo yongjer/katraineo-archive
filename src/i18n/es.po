@@ -1211,6 +1211,13 @@ msgstr "Árbol de jugadas"
 msgid "a11y:time-remaining"
 msgstr "Tiempo restante"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "No se pudo leer tu configuración, así que Katraineo se inició con la configuración predeterminada."
+
+msgid "config:kept"
+msgstr "El archivo de configuración ilegible se conservó como {file}."
+
 msgid "general:anim_pv_moves"
 msgstr "Jugadas a mostrar al animar una secuencia (0 para no animar)"
 

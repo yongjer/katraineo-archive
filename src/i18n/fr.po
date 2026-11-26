@@ -1184,6 +1184,13 @@ msgstr "Arbre des coups"
 msgid "a11y:time-remaining"
 msgstr "Temps restant"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "Vos paramètres n'ont pas pu être lus : Katraineo a démarré avec les paramètres par défaut."
+
+msgid "config:kept"
+msgstr "Le fichier de paramètres illisible a été conservé sous {file}."
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

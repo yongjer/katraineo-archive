@@ -1153,6 +1153,13 @@ msgstr "棋譜樹"
 msgid "a11y:time-remaining"
 msgstr "剩餘時間"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "無法讀取你的設定，因此 Katraineo 以預設設定啟動。"
+
+msgid "config:kept"
+msgstr "無法讀取的設定檔已保留為 {file}。"
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

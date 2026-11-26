@@ -1179,6 +1179,13 @@ msgstr "手順ツリー"
 msgid "a11y:time-remaining"
 msgstr "残り時間"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "設定を読み込めなかったため、Katraineo を既定の設定で起動しました。"
+
+msgid "config:kept"
+msgstr "読み込めなかった設定ファイルは {file} として残してあります。"
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

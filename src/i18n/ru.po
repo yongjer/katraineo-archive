@@ -1147,6 +1147,13 @@ msgstr "Дерево ходов"
 msgid "a11y:time-remaining"
 msgstr "Оставшееся время"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "Не удалось прочитать ваши настройки, поэтому Katraineo запущен с настройками по умолчанию."
+
+msgid "config:kept"
+msgstr "Нечитаемый файл настроек сохранён как {file}."
+
 msgid "remote engine disconnected popup opening message"
 msgstr ""
 "Соединение с удалённым движком KataGo было потеряно, и его не удалось восстановить автоматически.\n"

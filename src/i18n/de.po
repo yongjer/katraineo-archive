@@ -1215,6 +1215,13 @@ msgstr "Zugbaum"
 msgid "a11y:time-remaining"
 msgstr "Verbleibende Zeit"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "Deine Einstellungen konnten nicht gelesen werden, daher wurde Katraineo mit den Standardeinstellungen gestartet."
+
+msgid "config:kept"
+msgstr "Die unlesbare Einstellungsdatei wurde als {file} aufbewahrt."
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

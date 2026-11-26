@@ -1245,6 +1245,13 @@ msgstr "Hamle ağacı"
 msgid "a11y:time-remaining"
 msgstr "Kalan süre"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "Ayarlarınız okunamadı, bu yüzden Katraineo varsayılan ayarlarla başlatıldı."
+
+msgid "config:kept"
+msgstr "Okunamayan ayar dosyası {file} olarak saklandı."
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

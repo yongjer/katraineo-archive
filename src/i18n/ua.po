@@ -1231,6 +1231,13 @@ msgstr "Дерево ходів"
 msgid "a11y:time-remaining"
 msgstr "Залишок часу"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "Не вдалося прочитати ваші налаштування, тому Katraineo запущено з типовими налаштуваннями."
+
+msgid "config:kept"
+msgstr "Нечитабельний файл налаштувань збережено як {file}."
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

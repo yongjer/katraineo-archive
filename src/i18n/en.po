@@ -802,6 +802,13 @@ msgstr "Move tree"
 msgid "a11y:time-remaining"
 msgstr "Time remaining"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "Your settings could not be read, so Katraineo has started with the default settings."
+
+msgid "config:kept"
+msgstr "The unreadable settings file was kept as {file}."
+
 msgid "engine:max_visits"
 msgstr "Maximum number of visits in analysis"
 

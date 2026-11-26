@@ -1116,6 +1116,13 @@ msgstr "수순 트리"
 msgid "a11y:time-remaining"
 msgstr "남은 시간"
 
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "설정을 읽을 수 없어 Katraineo를 기본 설정으로 시작했습니다."
+
+msgid "config:kept"
+msgstr "읽을 수 없는 설정 파일은 {file}에 보관했습니다."
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

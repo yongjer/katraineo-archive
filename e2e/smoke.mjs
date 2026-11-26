@@ -117,7 +117,7 @@ try {
       async () => {
         const t = await engineState();
         if (/not running|failed|died/i.test(t)) throw new Error(t); // keeps the last error for the timeout message
-        return /ready|queries/.test(t) ? t : null;
+        return /ready|queries/i.test(t) ? t : null;
       },
       { what: "KataGo", timeout: 180000, interval: 1000 },
     );

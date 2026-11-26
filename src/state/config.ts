@@ -37,7 +37,16 @@ export interface AppConfig {
   game: { size: string; komi: number; handicap: number; rules: string; setup_move: number; setup_advantage: number };
   trainer: TrainerSettings & { show_move_numbers: boolean; lock_ai: boolean };
   ai: Record<string, AiSettings>;
-  general: { lang: string; sgf_load: string; sgf_save: string; load_fast_analysis: boolean; load_sgf_rewind: boolean; anim_pv_time: number; debug_level: number };
+  general: {
+    lang: string;
+    sgf_load: string;
+    sgf_save: string;
+    load_fast_analysis: boolean;
+    load_sgf_rewind: boolean;
+    anim_pv_time: number;
+    debug_level: number;
+    check_for_updates: boolean;
+  };
   ui: {
     play: AnalysisToggles;
     analyze: AnalysisToggles;

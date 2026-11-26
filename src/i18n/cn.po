@@ -1170,3 +1170,46 @@ msgstr "在棋盘上显示手数（按 'm' 键切换）"
 
 msgid "general:anim_pv_moves"
 msgstr "演示变化时显示的手数（0 表示不演示）"
+
+#. updates of the app itself
+msgid "update:title"
+msgstr "更新"
+
+msgid "update:check"
+msgstr "检查更新"
+
+msgid "update:checking"
+msgstr "正在检查更新…"
+
+msgid "update:latest"
+msgstr "Katraineo {version} 已是最新版本。"
+
+msgid "update:available"
+msgstr "Katraineo {version} 已发布。"
+
+msgid "update:current"
+msgstr "你当前的版本是 {version}。"
+
+msgid "update:restart"
+msgstr "更新完成后 Katraineo 会重新启动，请先保存棋谱。"
+
+msgid "update:install"
+msgstr "更新并重新启动"
+
+msgid "update:later"
+msgstr "稍后"
+
+msgid "update:downloading"
+msgstr "正在下载更新…"
+
+msgid "update:failed"
+msgstr "更新失败：{error}"
+
+msgid "update:check-failed"
+msgstr "检查更新失败：{error}"
+
+msgid "update:notice"
+msgstr "有新版本"
+
+msgid "check for updates"
+msgstr "启动时检查更新"

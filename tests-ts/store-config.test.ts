@@ -21,6 +21,8 @@ vi.mock("../src/state/platform", () => ({
     },
     saveConfig: async () => void fake.calls.push("save"),
     showWarning: async (message: string) => void fake.warnings.push(message),
+    appVersion: async () => "0.0.0",
+    checkForUpdate: async () => null,
     makeTransport: () => ({ setHandlers() {}, async start() {}, async send() {}, async stop() {} }),
     transportKind: () => "fake",
   },

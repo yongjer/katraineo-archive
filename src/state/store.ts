@@ -24,7 +24,7 @@ import { addTsumegoFrame } from "../core/tsumego";
 import { setLanguage } from "../ui/i18nLoader";
 import { sounds } from "../ui/sounds";
 import { isUnreadableConfig, parseSavedConfig, type AnalysisToggles, type AppConfig } from "./config";
-import { platform } from "./platform";
+import { platform, type UpdateInfo, type UpdateProgress } from "./platform";
 
 export interface Status {
   message: string;
@@ -36,7 +36,16 @@ export interface LogEntry {
   level: LogLevel;
 }
 
-export type DialogKind = null | "newgame" | "settings" | "ai" | "log" | "timer" | "tsumego" | "report" | "reanalyze";
+export type DialogKind = null | "newgame" | "settings" | "ai" | "log" | "timer" | "tsumego" | "report" | "reanalyze" | "update";
+
+/** Updates of the app itself: `checking` and `latest` only follow a check from the menu. */
+export interface UpdateState {
+  phase: "idle" | "checking" | "latest" | "available" | "installing" | "error";
+  currentVersion: string;
+  info: UpdateInfo | null;
+  progress: UpdateProgress | null;
+  error: string | null;
+}
 
 /** What the clock shows: main time, or the current byo-yomi period and the periods left. */
 export interface TimerState {
@@ -67,6 +76,7 @@ interface State {
   /** Dragging on the board selects a region of interest (key g) instead of playing. */
   selectingRegion: boolean;
   showCoords: boolean;
+  update: UpdateState;
 }
 
 export const useStore = create<State>(() => ({
@@ -84,6 +94,7 @@ export const useStore = create<State>(() => ({
   timer: { paused: true, remaining: 30, periods: 5, ai: false },
   selectingRegion: false,
   showCoords: true,
+  update: { phase: "idle", currentVersion: "", info: null, progress: null, error: null },
 }));
 
 const get = useStore.getState;
@@ -255,6 +266,40 @@ export async function init() {
   set({ config, ready: true, lang: config.general.lang });
   await startEngine();
   newGame(undefined, { fromConfig: true });
+  void platform.appVersion().then((currentVersion) => setUpdate({ currentVersion }));
+  if (config.general.check_for_updates) void checkForUpdates(false);
+}
+
+// ---------------------------------------------------------------- updates of the app
+function setUpdate(changes: Partial<UpdateState>) {
+  set((s) => ({ update: { ...s.update, ...changes } }));
+}
+
+/** Look for a newer Katraineo. The check at startup (`manual` false) only logs failures; one from the menu shows them. */
+export async function checkForUpdates(manual: boolean) {
+  if (!platform.isDesktop || get().update.phase === "installing") return;
+  if (manual) setUpdate({ phase: "checking", error: null });
+  try {
+    const info = await platform.checkForUpdate();
+    if (info) setUpdate({ phase: "available", info, error: null });
+    else setUpdate({ phase: manual ? "latest" : "idle", info: null });
+  } catch (e) {
+    log(`Checking for updates failed: ${e}`, manual ? "error" : "info");
+    if (manual) setUpdate({ phase: "error", info: null, error: String(e) });
+  }
+}
+
+/** Install the update that was found; the app restarts when it is done. */
+export async function installUpdate() {
+  const { phase, info } = get().update;
+  if (!info || phase === "installing") return;
+  setUpdate({ phase: "installing", progress: null, error: null });
+  try {
+    await platform.installUpdate((progress) => setUpdate({ progress }));
+  } catch (e) {
+    log(`Updating failed: ${e}`, "error");
+    setUpdate({ phase: "error", error: String(e) });
+  }
 }
 
 // A loaded game is reviewed by humans, but only until the next new game: the player types to return to.

@@ -1223,3 +1223,46 @@ msgstr "盤上に手数を表示する（'m' キーで切り替え）"
 
 msgid "general:anim_pv_moves"
 msgstr "手順アニメーションで表示する手数（0 でアニメーションしない）"
+
+#. updates of the app itself
+msgid "update:title"
+msgstr "アップデート"
+
+msgid "update:check"
+msgstr "アップデートを確認"
+
+msgid "update:checking"
+msgstr "アップデートを確認しています…"
+
+msgid "update:latest"
+msgstr "Katraineo {version} は最新バージョンです。"
+
+msgid "update:available"
+msgstr "Katraineo {version} が利用可能です。"
+
+msgid "update:current"
+msgstr "現在のバージョンは {version} です。"
+
+msgid "update:restart"
+msgstr "アップデートを完了するために Katraineo が再起動します。先に棋譜を保存してください。"
+
+msgid "update:install"
+msgstr "アップデートして再起動"
+
+msgid "update:later"
+msgstr "後で"
+
+msgid "update:downloading"
+msgstr "アップデートをダウンロードしています…"
+
+msgid "update:failed"
+msgstr "アップデートに失敗しました: {error}"
+
+msgid "update:check-failed"
+msgstr "アップデートの確認に失敗しました: {error}"
+
+msgid "update:notice"
+msgstr "アップデートあり"
+
+msgid "check for updates"
+msgstr "起動時にアップデートを確認"

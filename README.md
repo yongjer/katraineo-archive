@@ -26,8 +26,10 @@ KaTrain's saved analysis. See [DEVELOPMENT.md](DEVELOPMENT.md) for how it is bui
 
 ## <a name="install"></a> Installation
 
-Test builds for Windows, macOS (Apple Silicon and Intel) and Linux are on the
-[`tauri-nightly` release](https://github.com/yongjer/katraineo/releases/tag/tauri-nightly):
+Download Katraineo for Windows, macOS (Apple Silicon and Intel) or Linux from the
+[latest release](https://github.com/yongjer/katraineo/releases/latest). Katraineo checks for a newer version when it
+starts, and installs it from the menu (*Check for Updates*). Test builds of the newest changes are on the
+[`tauri-nightly` prerelease](https://github.com/yongjer/katraineo/releases/tag/tauri-nightly).
 
 * **macOS**: open the `_aarch64.dmg` (Apple Silicon) or `_x64.dmg` (Intel) and drag Katraineo to Applications.
   The build is not signed by Apple, so macOS blocks it the first time it is opened. Then go to

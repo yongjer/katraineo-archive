@@ -1261,3 +1261,46 @@ msgstr "Zugnummern auf dem Brett anzeigen (mit 'm' umschalten)"
 msgid "general:anim_pv_moves"
 msgstr ""
 "Anzahl der Züge bei der Animation einer Zugfolge (0 = keine Animation)"
+
+#. updates of the app itself
+msgid "update:title"
+msgstr "Updates"
+
+msgid "update:check"
+msgstr "Nach Updates suchen"
+
+msgid "update:checking"
+msgstr "Suche nach Updates…"
+
+msgid "update:latest"
+msgstr "Katraineo {version} ist die neueste Version."
+
+msgid "update:available"
+msgstr "Katraineo {version} ist verfügbar."
+
+msgid "update:current"
+msgstr "Installiert ist Version {version}."
+
+msgid "update:restart"
+msgstr "Katraineo startet neu, um das Update abzuschließen. Speichere vorher deine Partie."
+
+msgid "update:install"
+msgstr "Aktualisieren und neu starten"
+
+msgid "update:later"
+msgstr "Später"
+
+msgid "update:downloading"
+msgstr "Update wird heruntergeladen…"
+
+msgid "update:failed"
+msgstr "Das Update ist fehlgeschlagen: {error}"
+
+msgid "update:check-failed"
+msgstr "Die Suche nach Updates ist fehlgeschlagen: {error}"
+
+msgid "update:notice"
+msgstr "Update verfügbar"
+
+msgid "check for updates"
+msgstr "Beim Start nach Updates suchen"

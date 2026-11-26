@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Katraineo",
-  "version": "2.0.0",
+  "version": "../package.json",
   "identifier": "io.github.yongjer.katraineo",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -39,6 +39,20 @@
     "resources": {
       "../resources/models/b10c384h6nbttflrs.bin.gz": "models/b10c384h6nbttflrs.bin.gz",
       "../resources/KataGo/analysis_config.cfg": "KataGo/analysis_config.cfg"
+    },
+    "windows": {
+      "wix": {
+        "version": "2.0.0"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJFRkVDM0JCRjQ1RUE0REUKUldUZXBGNzB1OFArTGhhOWdUaDE0Wm93blFkOUc5QWkzV3V0MGJEUmlLNWFWZHhqSDdiN05tKzYK",
+      "endpoints": [
+        "https://github.com/yongjer/katraineo/releases/latest/download/latest.json"
+      ],
+      "requireSignedVersion": true
     }
   }
 }

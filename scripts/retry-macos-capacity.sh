@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Re-runs the failed jobs of a workflow run while its macOS builds were cancelled for lack of a runner. GitHub's macOS
-# runners are often short of capacity, and cancels a job when none picks it up. Any other failure is left alone.
+# runners are often short of capacity, and cancels a job when none picks it up. Any other failure is left alone, and so
+# is the run of a pull request that has a newer run.
 #
 #   GH_REPO=owner/repo scripts/retry-macos-capacity.sh <run id> [retries]     (default: 3 retries)
 #
@@ -11,6 +12,18 @@ run="$1"
 retries="${2:-3}"
 
 current_attempt() { gh api "repos/$GH_REPO/actions/runs/$run" --jq .run_attempt; }
+
+# A pull request's run is superseded once a newer push has started another one. It is not retried: the runs of a pull
+# request share a concurrency group (tauri.yml), so its new attempt would cancel the newer run.
+superseded() {
+  local event branch workflow newest
+  IFS=$'\t' read -r event branch workflow < <(gh api "repos/$GH_REPO/actions/runs/$run" \
+    --jq '[.event, .head_branch, .workflow_id] | @tsv')
+  [ "$event" = pull_request ] || return 1
+  newest="$(gh api -X GET "repos/$GH_REPO/actions/workflows/$workflow/runs" -f event=pull_request -f branch="$branch" \
+    -f per_page=1 --jq '.workflow_runs[0].id')"
+  [ "$newest" != "$run" ]
+}
 
 lacked_a_runner() {
   local job messages
@@ -26,6 +39,10 @@ lacked_a_runner() {
 }
 
 for ((try = 1; try <= retries; try++)); do
+  if superseded; then
+    echo "Run $run was superseded by a newer push to its pull request: nothing to retry."
+    exit 0
+  fi
   attempt="$(current_attempt)"
   if ! lacked_a_runner "$attempt"; then
     echo "Attempt $attempt of run $run did not lack a macOS runner: nothing to retry."

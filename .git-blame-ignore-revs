@@ -7,3 +7,6 @@
 
 # Format the end-to-end test with Prettier
 68508d23942437846ae487710f49a9047ac55cb1
+
+# Format the Rust code with rustfmt
+56d28d86a3af778009912a6495d31dbe149b5aff

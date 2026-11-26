@@ -56,10 +56,12 @@ npm run typecheck
 npm run lint             # Oxlint, with the React hooks rules (.oxlintrc.json)
 npm run format           # Prettier; CI runs `npm run format:check`
 cargo test --manifest-path src-tauri/Cargo.toml
+cargo fmt --manifest-path src-tauri/Cargo.toml     # rustfmt (src-tauri/rustfmt.toml); CI runs it with --check
 ```
 
 ESLint is not used: typescript-eslint needs TypeScript's JavaScript API, which TypeScript 7 no longer has. To see the
-code before the Prettier reformatting in `git blame`, run `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
+code before the Prettier and rustfmt reformatting in `git blame`, run
+`git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 
 KataGo is bundled for Windows and Linux (`resources/KataGo`). For macOS, `scripts/build-katago-macos.sh` builds it
 from source (Metal on Apple Silicon, OpenCL on Intel) with its Homebrew libraries copied next to it, as CI does;
@@ -148,6 +150,13 @@ These are unsigned test builds.
 
 GitHub's macOS runners are often short of capacity, and it cancels a job that no runner picks up. When that happens to a
 macOS build, `.github/workflows/retry-macos.yml` re-runs the failed jobs, up to three times. Other failures are left alone.
+
+So that CI asks for few of them, everything that does not need a Mac runs on Linux (the `test` job: typecheck, lint,
+formatting, the unit tests, `cargo fmt`, `cargo test` and clippy), and pull requests build the macOS apps only when they
+change what those are built from besides the frontend: `src-tauri/`, `resources/`, `scripts/build-katago-macos.sh`, the
+npm packages or the workflow. The frontend is the same on every platform, the Linux and Windows builds compile it, and
+the end-to-end tests use it in WebKit on Linux. Pushes to `main`, tags and runs started by hand build everything. A
+newer push to a pull request cancels the run of the older one.
 
 ## Releases
 

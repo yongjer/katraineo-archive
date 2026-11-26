@@ -172,7 +172,10 @@ pub fn save_config(app: AppHandle, contents: String) -> Result<(), String> {
     write_text_file(path.to_string_lossy().into_owned(), contents)
 }
 
-/// Download a game record for "paste a link to an SGF". Only http(s), at most 10 MB.
+/// The largest game record "paste a link to an SGF" downloads.
+const MAX_GAME_RECORD: usize = 10 << 20;
+
+/// Download a game record for "paste a link to an SGF". Only http(s), at most 10 MB, within a minute.
 #[tauri::command]
 pub async fn fetch_text(url: String) -> Result<String, String> {
     if !(url.starts_with("https://") || url.starts_with("http://")) {
@@ -180,20 +183,34 @@ pub async fn fetch_text(url: String) -> Result<String, String> {
     }
     let client = reqwest::Client::builder()
         .user_agent(concat!("Katraineo/", env!("CARGO_PKG_VERSION")))
+        .connect_timeout(Duration::from_secs(15))
+        .timeout(Duration::from_secs(60))
         .build()
         .map_err(|e| e.to_string())?;
-    let res = client.get(&url).send().await.map_err(|e| e.to_string())?;
+    let bytes = fetch_limited(&client, &url, MAX_GAME_RECORD).await?;
+    Ok(decode_game_bytes(&bytes, &url))
+}
+
+/// GET `url`, reading at most `limit` bytes: a server that sends more, with or without saying so in Content-Length,
+/// is cut off instead of read to the end.
+async fn fetch_limited(client: &reqwest::Client, url: &str, limit: usize) -> Result<Vec<u8>, String> {
+    let error = |e: reqwest::Error| if e.is_timeout() { format!("{url} did not answer in time") } else { e.to_string() };
+    let too_large = || format!("{url} is too large to be a game record");
+    let mut res = client.get(url).send().await.map_err(error)?;
     if !res.status().is_success() {
         return Err(format!("{url} returned {}", res.status()));
     }
-    if res.content_length().is_some_and(|n| n > 10 << 20) {
-        return Err(format!("{url} is too large to be a game record"));
+    if res.content_length().is_some_and(|n| n > limit as u64) {
+        return Err(too_large());
     }
-    let bytes = res.bytes().await.map_err(|e| e.to_string())?;
-    if bytes.len() > 10 << 20 {
-        return Err(format!("{url} is too large to be a game record"));
+    let mut bytes = Vec::new();
+    while let Some(chunk) = res.chunk().await.map_err(error)? {
+        if bytes.len() + chunk.len() > limit {
+            return Err(too_large());
+        }
+        bytes.extend_from_slice(&chunk);
     }
-    Ok(decode_game_bytes(&bytes, &url))
+    Ok(bytes)
 }
 
 #[cfg(test)]
@@ -207,6 +224,73 @@ mod tests {
         assert_eq!(decode_game_bytes(&gbk, "a.sgf"), "(;CA[GB2312]PB[李昌镐])");
         let (sjis, _, _) = encoding_rs::SHIFT_JIS.encode("(;PB[井山裕太]PW[張栩];B[pd];W[dp];B[pp];W[dd])");
         assert!(decode_game_bytes(&sjis, "a.sgf").contains("井山裕太"));
+    }
+
+    /// Answer one HTTP request on a local port with `respond`, after reading the request; returns the URL.
+    fn serve_once(respond: impl FnOnce(std::net::TcpStream) + Send + 'static) -> String {
+        use std::io::Read;
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}/game.sgf", listener.local_addr().unwrap());
+        std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            let mut head = Vec::new();
+            let mut buf = [0u8; 1024];
+            while !head.windows(4).any(|w| w == b"\r\n\r\n") {
+                match stream.read(&mut buf) {
+                    Ok(0) | Err(_) => return,
+                    Ok(n) => head.extend_from_slice(&buf[..n]),
+                }
+            }
+            respond(stream);
+        });
+        url
+    }
+
+    fn fetch(url: &str, limit: usize) -> Result<Vec<u8>, String> {
+        // straight to the local server, past any proxy of the environment
+        let client = reqwest::Client::builder().no_proxy().timeout(Duration::from_millis(500)).build().unwrap();
+        tauri::async_runtime::block_on(fetch_limited(&client, url, limit))
+    }
+
+    #[test]
+    fn fetches_a_game_record() {
+        let url = serve_once(|mut s| {
+            let _ = s.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 8\r\nConnection: close\r\n\r\n(;GM[1])");
+        });
+        assert_eq!(fetch(&url, 1000).unwrap(), b"(;GM[1])");
+        let url = serve_once(|mut s| {
+            let _ = s.write_all(b"HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
+        });
+        assert!(fetch(&url, 1000).unwrap_err().ends_with("returned 404 Not Found"));
+    }
+
+    #[test]
+    fn stops_reading_a_response_larger_than_the_limit() {
+        // too large by its Content-Length: not read at all
+        let url = serve_once(|mut s| {
+            let _ = s.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 5000\r\n\r\n");
+            std::thread::sleep(Duration::from_secs(2));
+        });
+        assert!(fetch(&url, 1000).unwrap_err().ends_with("is too large to be a game record"));
+        // no Content-Length: cut off once the limit is passed, without waiting for the rest
+        let url = serve_once(|mut s| {
+            let _ = s.write_all(b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n");
+            for _ in 0..2 {
+                let _ = s.write_all(format!("258\r\n{}\r\n", "a".repeat(600)).as_bytes());
+                let _ = s.flush();
+            }
+            std::thread::sleep(Duration::from_secs(2));
+        });
+        assert!(fetch(&url, 1000).unwrap_err().ends_with("is too large to be a game record"));
+    }
+
+    #[test]
+    fn gives_up_on_a_server_that_stops_sending() {
+        let url = serve_once(|mut s| {
+            let _ = s.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 100\r\n\r\n(;GM[1]");
+            std::thread::sleep(Duration::from_secs(2));
+        });
+        assert!(fetch(&url, 1000).unwrap_err().ends_with("did not answer in time"));
     }
 
     /// An empty folder for one test.

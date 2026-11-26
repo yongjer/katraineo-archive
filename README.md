@@ -28,8 +28,11 @@ Test builds for Windows, macOS (Apple Silicon and Intel) and Linux are on the
 [`tauri-nightly` release](https://github.com/yongjer/katraineo/releases/tag/tauri-nightly):
 
 * **macOS**: open the `_aarch64.dmg` (Apple Silicon) or `_x64.dmg` (Intel) and drag Katraineo to Applications.
-  The build is not signed, so the first time, open it from Finder with right click → Open
-  (or allow it under System Settings → Privacy & Security).
+  The build is not signed by Apple, so macOS blocks it the first time it is opened. Then go to
+  System Settings → Privacy & Security, click *Open Anyway* next to the message about Katraineo, and confirm.
+  (On macOS 14 or earlier, opening it from Finder with right click → Open works as well.)
+  If macOS says instead that Katraineo is damaged, run `xattr -dr com.apple.quarantine /Applications/Katraineo.app`
+  in Terminal.
 * **Windows**: run the `.msi` or `-setup.exe` installer. SmartScreen may warn about an unknown publisher; choose
   *More info* → *Run anyway*.
 * **Linux**: install the `.deb`, or make the `.AppImage` executable and run it (this needs FUSE: on Ubuntu or Debian,

@@ -1,0 +1,6 @@
+# Commits that only change the layout of the code, for git blame:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+# (GitHub uses this file on its own.)
+
+# Format the code with Prettier
+01bfca1ead0e7dfcb23a42a63ff7a694084c096a

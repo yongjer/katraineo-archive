@@ -1,0 +1,4 @@
+# The width the rest of the code (Prettier) and the comments are wrapped at. "Max": a chain or a call may use all
+# of it, as the code did before rustfmt.
+max_width = 120
+use_small_heuristics = "Max"

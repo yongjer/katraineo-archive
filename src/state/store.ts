@@ -96,18 +96,30 @@ function log(message: string, level: LogLevel = "info") {
   set((s) => ({ logs: [...s.logs.slice(-499), { message, level }] }));
 }
 
-let refreshScheduled = false;
-/** Re-render (at most once per frame) and run the AI / pondering logic. */
+let renderScheduled = false;
+let updateScheduled = false;
+/**
+ * Re-render (at most once per frame) and run the AI / teaching / pondering logic (at most about as often).
+ * The logic runs on a timer of its own: web views pause animation frames while the window is minimized or hidden,
+ * and AI moves must go on then.
+ */
 export function refresh() {
-  if (refreshScheduled) return;
-  refreshScheduled = true;
-  const run = () => {
-    refreshScheduled = false;
-    set((s) => ({ tick: s.tick + 1 }));
-    updateState();
-  };
-  if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(run);
-  else setTimeout(run, 16);
+  if (!updateScheduled) {
+    updateScheduled = true;
+    setTimeout(() => {
+      updateScheduled = false;
+      updateState();
+    }, 16);
+  }
+  if (!renderScheduled) {
+    renderScheduled = true;
+    const render = () => {
+      renderScheduled = false;
+      set((s) => ({ tick: s.tick + 1 }));
+    };
+    if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(render);
+    else setTimeout(render, 16);
+  }
 }
 
 export function setStatus(message: string, level: StatusLevel = "info") {

@@ -32,7 +32,7 @@ function Modal({ title, children, onClose, footer }: { title: string; children: 
       <div className="modal" role="dialog" aria-label={title}>
         <div className="modal-header">
           <h2>{title}</h2>
-          <button className="icon-button" aria-label="Close" onClick={onClose}>
+          <button className="icon-button" aria-label={t("a11y:close")} onClick={onClose}>
             ✕
           </button>
         </div>
@@ -432,7 +432,7 @@ export function AiSettingsDialog() {
 export function LogDialog() {
   const logs = useStore((s) => s.logs);
   return (
-    <Modal title="KataGo log" onClose={() => openDialog(null)}>
+    <Modal title={t("menu:katago-log")} onClose={() => openDialog(null)}>
       <pre className="log">
         {logs.slice(-300).map((l, i) => (
           <div key={i} className={`log-${l.level}`}>

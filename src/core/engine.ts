@@ -144,6 +144,9 @@ export class KataGoEngine {
   private reconnectMessage = "";
   private disconnectReason = "";
   private startCount = 0;
+  private restartCount = 0;
+  /** The transport a restart in progress switches to. */
+  private nextTransport: EngineTransport | null = null;
   private ponderQuery: Query | null = null;
   private queryCounter = 0;
   private basePriority = 0;
@@ -189,7 +192,7 @@ export class KataGoEngine {
 
   /** What the status bar should keep showing about the engine: why it stopped, or the reconnect progress. */
   get connectionMessage(): string | null {
-    if (this.state === "dead") return this.lastError ?? "KataGo stopped";
+    if (this.state === "dead") return this.lastError ?? t("KataGo stopped");
     if (this.reconnecting) return this.reconnectMessage;
     return null;
   }
@@ -214,7 +217,7 @@ export class KataGoEngine {
       if (run === this.startCount && this.state === "starting" && result?.ready) this.setState("ready");
     } catch (e) {
       if (run !== this.startCount) return;
-      this.startFailed(this.isRemote ? tf("Connecting to remote KataGo failed", { url, error: e }) : `Starting KataGo failed: ${e}`);
+      this.startFailed(this.isRemote ? tf("Connecting to remote KataGo failed", { url, error: e }) : tf("Starting KataGo failed", { error: e }));
     }
   }
 
@@ -224,16 +227,24 @@ export class KataGoEngine {
     this.setState("dead");
   }
 
-  /** Restart with new settings; a new transport replaces the old one (e.g. switching to a remote engine). */
+  /**
+   * Restart with new settings; a new transport replaces the old one (e.g. switching to a remote engine).
+   * When restarts overlap (the settings changed again while the engine was still stopping), only the last one starts
+   * the engine: each starting it would start it twice, and the earlier start could make the later one fail.
+   */
   async restart(settings?: EngineSettings, transport?: EngineTransport) {
+    const run = ++this.restartCount;
     if (settings) this.settings = settings;
+    if (transport && transport !== this.transport) this.nextTransport = transport;
     this.queryGeneration++;
     this.queries.clear();
     this.sentPayloads.clear();
     this.ponderQuery = null;
     await this.shutdown();
-    if (transport && transport !== this.transport) {
-      this.transport = transport;
+    if (run !== this.restartCount) return; // a later restart starts the engine
+    if (this.nextTransport) {
+      this.transport = this.nextTransport;
+      this.nextTransport = null;
       this.installHandlers();
     }
     await this.start();
@@ -398,7 +409,7 @@ export class KataGoEngine {
       return;
     }
     if (line.includes("Uncaught exception") || line.includes("what()")) {
-      this.lastError = `KataGo Engine Failed: ${line.slice(9).trim()}`;
+      this.lastError = tf("KataGo engine failed", { error: line.slice(9).trim() });
       this.log(this.lastError, "error");
       this.setState("dead");
       return;
@@ -416,7 +427,7 @@ export class KataGoEngine {
       return;
     }
     this.lastError =
-      this.lastError ?? (this.isRemote ? tf("Remote KataGo engine disconnected", { error: this.disconnectReason }) : `Engine died unexpectedly (status ${code})`);
+      this.lastError ?? (this.isRemote ? tf("Remote KataGo engine disconnected", { error: this.disconnectReason }) : tf("Engine exited unexpectedly", { code }));
     this.log(this.lastError, "error");
     this.queries.clear();
     this.sentPayloads.clear();

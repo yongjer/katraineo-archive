@@ -213,15 +213,21 @@ fn emit_exit(app: &AppHandle, generation: u64, code: Option<i32>) {
 #[tauri::command]
 pub async fn engine_start(app: AppHandle, settings: EngineLaunch) -> Result<StartResult, String> {
     let state = app.state::<EngineState>();
-    let generation = {
-        let mut guard = state.running.lock().map_err(|e| e.to_string())?;
-        kill(&mut guard);
-        state.generation.fetch_add(1, Ordering::SeqCst) + 1
-    };
     if resolve_backend(&settings) == "remote" {
+        let generation = {
+            let mut guard = state.running.lock().map_err(|e| e.to_string())?;
+            kill(&mut guard);
+            state.generation.fetch_add(1, Ordering::SeqCst) + 1
+        };
+        // Connecting cannot hold the lock; start_remote checks that no other start or stop came in meanwhile.
         return start_remote(app.clone(), generation, settings.remote_url.trim().to_string()).await;
     }
+    // A local engine is started in one critical section, from stopping the old engine to storing the new one: with
+    // a gap in between, two starts at once could each spawn a process, and the second would replace the first
+    // without stopping it, leaving a KataGo running that nothing owns.
     let mut guard = state.running.lock().map_err(|e| e.to_string())?;
+    kill(&mut guard);
+    let generation = state.generation.fetch_add(1, Ordering::SeqCst) + 1;
 
     let (mut cmd, display) = build_command(&app, &settings)?;
     cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped());

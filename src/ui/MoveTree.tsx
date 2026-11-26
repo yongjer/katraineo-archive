@@ -110,7 +110,7 @@ export function MoveTree() {
 
   return (
     <div className="move-tree panel">
-      <div className="move-tree-scroll" ref={scrollRef} role="tree" aria-label="Move tree">
+      <div className="move-tree-scroll" ref={scrollRef} role="tree" aria-label={t("a11y:move-tree")}>
         <svg width={width} height={height} className="move-tree-svg">
           <path d={lines.join("")} className="tree-line" />
           {[...pos].map(([node, [x, y]]) => {

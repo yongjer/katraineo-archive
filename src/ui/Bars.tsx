@@ -51,7 +51,7 @@ export function TopBar() {
   return (
     <header className="topbar">
       <div className="menu-anchor">
-        <button className="icon-button" aria-label="Menu" onClick={() => setMenuOpen((o) => !o)}>
+        <button className="icon-button" aria-label={t("a11y:menu")} onClick={() => setMenuOpen((o) => !o)}>
           ☰
         </button>
         {menuOpen && (
@@ -65,9 +65,9 @@ export function TopBar() {
             <MenuItem label={t("menu:aisettings")} shortcut="F7" onClick={() => openDialog("ai")} />
             <MenuItem label={t("menu:clocksettings")} shortcut="F5" onClick={() => openDialog("timer")} />
             <hr />
-            <MenuItem label="Copy SGF" shortcut={`${MOD_KEY}C`} onClick={() => void copySgf()} />
-            <MenuItem label="Paste SGF / link" shortcut={`${MOD_KEY}V`} onClick={() => void pasteSgf()} />
-            <MenuItem label="KataGo log" onClick={() => openDialog("log")} />
+            <MenuItem label={t("menu:copy-sgf")} shortcut={`${MOD_KEY}C`} onClick={() => void copySgf()} />
+            <MenuItem label={t("menu:paste-sgf")} shortcut={`${MOD_KEY}V`} onClick={() => void pasteSgf()} />
+            <MenuItem label={t("menu:katago-log")} onClick={() => openDialog("log")} />
             {platform.isDesktop && (
               <>
                 <hr />
@@ -169,32 +169,32 @@ export function ControlsBar() {
   const engine = getEngine();
   const remaining = engine?.queriesRemaining() ?? 0;
   let engineColor: string = THEME.engine.ready;
-  let engineTitle = "KataGo ready";
+  let engineTitle = t("engine:ready");
   const engineStopped = !engine || engine.state === "dead" || engine.state === "stopped";
   if (engineStopped) {
     engineColor = THEME.engine.dead;
-    engineTitle = `${engine?.lastError ?? "KataGo not running"}\n${t("engine:restart:hint")}`;
+    engineTitle = `${engine?.lastError ?? t("engine:not-running")}\n${t("engine:restart:hint")}`;
   } else if (engine.isReconnecting) {
     engineColor = THEME.engine.busy;
     engineTitle = engine.connectionMessage ?? "";
   } else if (pondering) {
     engineColor = THEME.engine.pondering;
-    engineTitle = "Continuous analysis";
+    engineTitle = t("engine:pondering");
   } else if (engine.state === "starting" || remaining > 0) {
     engineColor = THEME.engine.busy;
-    engineTitle = engine.state === "starting" ? "Starting KataGo…" : `${remaining} queries`;
+    engineTitle = engine.state === "starting" ? t("engine:starting") : t("engine:queries").replace("{count}", String(remaining));
   }
   return (
     <footer className="controls">
       <div className="nav">
-        <NavButton label="⇤✗" title="Previous mistake (N)" onClick={() => findMistake("undo")} mistake />
-        <NavButton label="⏮" title="Start (Home)" onClick={() => undo(9999)} />
-        <NavButton label="⏪" title="-10 (Shift+Left)" onClick={() => undo(10)} />
-        <NavButton label="◀" title="Previous (Left / Z)" onClick={() => undo(1)} />
-        <NavButton label="▶" title="Next (Right / X)" onClick={() => redo(1)} />
-        <NavButton label="⏩" title="+10 (Shift+Right)" onClick={() => redo(10)} />
-        <NavButton label="⏭" title="End (End)" onClick={() => redo(9999)} />
-        <NavButton label="✗⇥" title="Next mistake (Shift+N)" onClick={() => findMistake("redo")} mistake />
+        <NavButton label="⇤✗" title={`${t("nav:previous-mistake")} (Shift+N)`} onClick={() => findMistake("undo")} mistake />
+        <NavButton label="⏮" title={`${t("nav:start")} (Home)`} onClick={() => undo(9999)} />
+        <NavButton label="⏪" title={`${t("nav:back-10")} (Shift+Left)`} onClick={() => undo(10)} />
+        <NavButton label="◀" title={`${t("nav:previous")} (Left / Z)`} onClick={() => undo(1)} />
+        <NavButton label="▶" title={`${t("nav:next")} (Right / X)`} onClick={() => redo(1)} />
+        <NavButton label="⏩" title={`${t("nav:forward-10")} (Shift+Right)`} onClick={() => redo(10)} />
+        <NavButton label="⏭" title={`${t("nav:end")} (End)`} onClick={() => redo(9999)} />
+        <NavButton label="✗⇥" title={`${t("nav:next-mistake")} (N)`} onClick={() => findMistake("redo")} mistake />
       </div>
       <div className="actions">
         <button className="text-button" onClick={() => playAt(null)} title="P">

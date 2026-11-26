@@ -29,4 +29,3 @@ export const host: GameHost = {
   setStatus: () => {},
   log: () => {},
 };
-

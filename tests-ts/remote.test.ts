@@ -69,7 +69,11 @@ const until = async (cond: () => boolean, ms = 2000) => {
   }
 };
 
-const ids = (sent: string[]) => sent.map((l) => JSON.parse(l)).filter((q) => q.action !== "terminate").map((q) => q.id as string);
+const ids = (sent: string[]) =>
+  sent
+    .map((l) => JSON.parse(l))
+    .filter((q) => q.action !== "terminate")
+    .map((q) => q.id as string);
 
 describe("remote engine", () => {
   beforeAll(() => {

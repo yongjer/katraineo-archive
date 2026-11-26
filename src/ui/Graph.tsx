@@ -40,6 +40,7 @@ export function Graph() {
     const winratePath = path(winrates, (v) => H - v * H);
     const current = nodes.indexOf(game.currentNode);
     return { nodes, scorePath, winratePath, scoreRange, current, x, n };
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- the game changes in place: tick counts its changes
   }, [game, tick]);
 
   if (!game || !data) return null;

@@ -5,7 +5,7 @@ import { Move } from "./move";
 
 export class ParseError extends Error {}
 
-const PROP_PAT = /\s*(?:\(|\)|;|(\w+)((?:\s*\[(?:[^\]\\]|\\.)*\])+))/ys;
+const PROP_PAT = /\s*(?:\(|\)|;|(\w+)((?:\s*\[(?:[^\]\\]|\\.)*\])+))/sy;
 const VALUE_PAT = /\[((?:[^\]\\]|\\.)*)\]/gs;
 const SGF_PAT = /\(;.*\)/s;
 

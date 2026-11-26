@@ -43,5 +43,6 @@ export async function setLanguage(lang: string) {
     cache.set(lang, catalog);
   }
   setCatalogs(english, catalog);
-  document.documentElement.lang = ({ tw: "zh-Hant", cn: "zh-Hans", jp: "ja", ua: "uk" } as Record<string, string>)[lang] ?? lang;
+  document.documentElement.lang =
+    ({ tw: "zh-Hant", cn: "zh-Hans", jp: "ja", ua: "uk" } as Record<string, string>)[lang] ?? lang;
 }

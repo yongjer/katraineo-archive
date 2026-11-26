@@ -67,14 +67,18 @@ export function gameReport(
     const filtered = cands.filter((d) => d.order < ADDITIONAL_MOVE_ORDER && d.prior !== undefined);
     const priorSum = filtered.reduce((s, d) => s + d.prior!, 0);
     // complexity, capped at 1
-    const weight = Math.min(1, filtered.reduce((s, d) => s + Math.max(d.pointsLost, 0) * d.prior!, 0) / (priorSum || 1e-6));
+    const weight = Math.min(
+      1,
+      filtered.reduce((s, d) => s + Math.max(d.pointsLost, 0) * d.prior!, 0) / (priorSum || 1e-6),
+    );
     // between 0.05 and 1, dependent on difficulty and points lost
     const adjWeight = Math.max(0.05, Math.min(1, Math.max(weight, pointsLost / 4)));
     weights[player].push([weight, adjWeight]);
     if (n.parent!.analysisComplete) {
       const gtp = n.move!.gtp();
       if (cands[0].move === gtp) aiTopMove[player] += 1;
-      if (filtered.some((d) => d.move === gtp && (d.order === 0 || (d.pointsLost < 0.5 && d.order < 5)))) aiApproved[player] += 1;
+      if (filtered.some((d) => d.move === gtp && (d.order === 0 || (d.pointsLost < 0.5 && d.order < 5))))
+        aiApproved[player] += 1;
     }
   }
 

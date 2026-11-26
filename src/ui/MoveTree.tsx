@@ -60,6 +60,7 @@ export function MoveTree() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [menu, setMenu] = useState<{ node: GameNode; x: number; y: number } | null>(null);
 
+  // oxlint-disable-next-line react-hooks/exhaustive-deps -- the game changes in place: tick counts its changes
   const layout = useMemo(() => (game ? layoutTree(game.root) : null), [game, tick]);
   const current = game?.currentNode ?? null;
 
@@ -70,7 +71,8 @@ export function MoveTree() {
     if (!el || !p) return;
     const [x, y] = [cx(p[0]), cx(p[1])];
     if (x < el.scrollLeft + STEP || x > el.scrollLeft + el.clientWidth - STEP) el.scrollLeft = x - el.clientWidth / 2;
-    if (y < el.scrollTop + SIZE / 2 || y > el.scrollTop + el.clientHeight - SIZE / 2) el.scrollTop = y - el.clientHeight / 2;
+    if (y < el.scrollTop + SIZE / 2 || y > el.scrollTop + el.clientHeight - SIZE / 2)
+      el.scrollTop = y - el.clientHeight / 2;
   }, [current, layout]);
 
   useEffect(() => {
@@ -116,7 +118,8 @@ export function MoveTree() {
           {[...pos].map(([node, [x, y]]) => {
             const placements = node.placements.length + node.clearPlacements.length > 0;
             const label = placements ? "+" : String(node.depth);
-            const special = insertClass.get(node) ?? (node === current ? "current" : node === menu?.node ? "selected" : "");
+            const special =
+              insertClass.get(node) ?? (node === current ? "current" : node === menu?.node ? "selected" : "");
             return (
               <g
                 key={node.id}
@@ -127,14 +130,28 @@ export function MoveTree() {
                   if (!node.isRoot) setMenu({ node, x: e.clientX, y: e.clientY });
                 }}
               >
-                {special && <rect x={cx(x) - STEP / 2} y={cx(y) - STEP / 2} width={STEP} height={STEP} rx={4} className="tree-highlight" />}
+                {special && (
+                  <rect
+                    x={cx(x) - STEP / 2}
+                    y={cx(y) - STEP / 2}
+                    width={STEP}
+                    height={STEP}
+                    rx={4}
+                    className="tree-highlight"
+                  />
+                )}
                 <circle
                   cx={cx(x)}
                   cy={cx(y)}
                   r={SIZE / 2 - 1}
                   className={`tree-stone ${node.shortcutFrom || placements ? "collapsed" : `stone-${node.player}`} ${node.autoUndo ? "undone" : ""}`}
                 />
-                <text x={cx(x)} y={cx(y)} className={`tree-label on-${node.shortcutFrom ? "collapsed" : node.player}`} fontSize={label.length > 2 ? 8 : 10}>
+                <text
+                  x={cx(x)}
+                  y={cx(y)}
+                  className={`tree-label on-${node.shortcutFrom ? "collapsed" : node.player}`}
+                  fontSize={label.length > 2 ? 8 : 10}
+                >
                   {label}
                 </text>
                 <title>{node.move ? `${node.depth}: ${node.move.player} ${node.move.gtp()}` : label}</title>
@@ -144,10 +161,17 @@ export function MoveTree() {
         </svg>
       </div>
       {menu && (
-        <div className="tree-menu dropdown" style={{ left: menu.x, top: menu.y }} onMouseDown={(e) => e.stopPropagation()}>
+        <div
+          className="tree-menu dropdown"
+          style={{ left: menu.x, top: menu.y }}
+          onMouseDown={(e) => e.stopPropagation()}
+        >
           <button className="menu-item" onClick={() => act("delete")}>
             <span>{t("Delete Node")}</span>
-            <kbd>{MOD_KEY}{IS_MAC ? "⌫" : "Del"}</kbd>
+            <kbd>
+              {MOD_KEY}
+              {IS_MAC ? "⌫" : "Del"}
+            </kbd>
           </button>
           <button className="menu-item" onClick={() => act("main")}>
             <span>{t("Make Main Branch")}</span>

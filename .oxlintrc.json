@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "react", "vitest"],
+  "categories": {
+    "correctness": "error"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2024": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
+    // new Array(n) is a board or a row of n points everywhere here, never an array of one element
+    "unicorn/no-new-array": "off",
+    // the golden tests are data-driven: the test names come from the data, and some cases expect different results
+    "vitest/valid-title": "off",
+    "vitest/no-conditional-expect": "off",
+    "vitest/require-to-throw-message": "off",
+    // until() fails the test when its condition does not come true
+    "vitest/expect-expect": ["error", { "assertFunctionNames": ["expect", "until"] }]
+  },
+  "ignorePatterns": ["dist/**", "src-tauri/**", "resources/**"]
+}

@@ -1,7 +1,17 @@
 // The go board, ported from katrain/gui/badukpan.py. Drawn as SVG in board units: one grid cell = 1.
 
 import { useMemo, useRef, useState, type ReactNode } from "react";
-import { MODE_PLAY, PLAYER_AI, TOP_MOVE_DELTA_SCORE, TOP_MOVE_DELTA_WINRATE, TOP_MOVE_NOTHING, TOP_MOVE_SCORE, TOP_MOVE_VISITS, TOP_MOVE_WINRATE, type Player } from "../core/constants";
+import {
+  MODE_PLAY,
+  PLAYER_AI,
+  TOP_MOVE_DELTA_SCORE,
+  TOP_MOVE_DELTA_WINRATE,
+  TOP_MOVE_NOTHING,
+  TOP_MOVE_SCORE,
+  TOP_MOVE_VISITS,
+  TOP_MOVE_WINRATE,
+  type Player,
+} from "../core/constants";
 import { GameNode, type CandidateMove } from "../core/gameNode";
 import { t } from "../core/i18n";
 import { Move, type Coords } from "../core/move";
@@ -67,20 +77,45 @@ export function Board() {
       return pts;
     };
     const stars: ReactNode[] = [];
-    for (const x of starCoords(sx)) for (const y of starCoords(sy)) stars.push(<circle key={`s${x},${y}`} cx={x} cy={py(y)} r={0.1} />);
-    if (sx === sy && sx % 2 === 1 && sx <= 9 && sx >= 7) stars.push(<circle key="tengen" cx={(sx - 1) / 2} cy={(sy - 1) / 2} r={0.1} />);
+    for (const x of starCoords(sx))
+      for (const y of starCoords(sy)) stars.push(<circle key={`s${x},${y}`} cx={x} cy={py(y)} r={0.1} />);
+    if (sx === sy && sx % 2 === 1 && sx <= 9 && sx >= 7)
+      stars.push(<circle key="tengen" cx={(sx - 1) / 2} cy={(sy - 1) / 2} r={0.1} />);
     const coords: ReactNode[] = [];
     for (let x = 0; x < sx; x++) {
-      coords.push(<text key={`cx${x}`} x={x} y={sy - 1 + 0.82} className="coord">{gtpColumn(x)}</text>);
-      coords.push(<text key={`cxt${x}`} x={x} y={-0.62} className="coord">{gtpColumn(x)}</text>);
+      coords.push(
+        <text key={`cx${x}`} x={x} y={sy - 1 + 0.82} className="coord">
+          {gtpColumn(x)}
+        </text>,
+      );
+      coords.push(
+        <text key={`cxt${x}`} x={x} y={-0.62} className="coord">
+          {gtpColumn(x)}
+        </text>,
+      );
     }
     for (let y = 0; y < sy; y++) {
-      coords.push(<text key={`cy${y}`} x={-0.8} y={py(y)} className="coord">{y + 1}</text>);
-      coords.push(<text key={`cyr${y}`} x={sx - 1 + 0.8} y={py(y)} className="coord">{y + 1}</text>);
+      coords.push(
+        <text key={`cy${y}`} x={-0.8} y={py(y)} className="coord">
+          {y + 1}
+        </text>,
+      );
+      coords.push(
+        <text key={`cyr${y}`} x={sx - 1 + 0.8} y={py(y)} className="coord">
+          {y + 1}
+        </text>,
+      );
     }
     layers.push(
       <g key="board">
-        <rect x={-1.05} y={-1.05} width={sx + 1.1} height={sy + 1.1} rx={0.15} className={`board-bg ${game.insertMode ? "inserting" : ""}`} />
+        <rect
+          x={-1.05}
+          y={-1.05}
+          width={sx + 1.1}
+          height={sy + 1.1}
+          rx={0.15}
+          className={`board-bg ${game.insertMode ? "inserting" : ""}`}
+        />
         <g className="grid">{lines}</g>
         <g className="stars">{stars}</g>
         {showCoords && <g className="coords">{coords}</g>}
@@ -96,13 +131,26 @@ export function Board() {
       if (teachingStatus && undone?.autoUndo && undone.ownership && undone.move) {
         // teaching undo: show where the undone move lost territory
         const sign = undone.move.player === "B" ? -1 : 1;
-        const loss = varToGrid(undone.ownership.map((o, i) => Math.max(0, sign * (o - ownership[i]))), [sx, sy]);
+        const loss = varToGrid(
+          undone.ownership.map((o, i) => Math.max(0, sign * (o - ownership[i]))),
+          [sx, sy],
+        );
         const lossColor = (EVAL_COLORS[theme] ?? EVAL_COLORS["theme:normal"])[1];
         for (let y = 0; y < sy; y++) {
           for (let x = 0; x < sx; x++) {
             const alpha = Math.min(1, loss[y][x]) ** (1 / THEME.ownershipGamma) * THEME.hintsAlpha;
             if (alpha < 0.02) continue;
-            cells.push(<rect key={`l${x},${y}`} x={x - 0.5} y={py(y) - 0.5} width={1} height={1} fill={lossColor} opacity={alpha} />);
+            cells.push(
+              <rect
+                key={`l${x},${y}`}
+                x={x - 0.5}
+                y={py(y) - 0.5}
+                width={1}
+                height={1}
+                fill={lossColor}
+                opacity={alpha}
+              />,
+            );
           }
         }
       } else {
@@ -113,7 +161,15 @@ export function Board() {
             const alpha = Math.min(1, Math.abs(o)) ** (1 / THEME.ownershipGamma);
             if (alpha < 0.02) continue;
             cells.push(
-              <rect key={`o${x},${y}`} x={x - 0.5} y={py(y) - 0.5} width={1} height={1} fill={THEME.ownership[o > 0 ? "B" : "W"]} opacity={alpha} />,
+              <rect
+                key={`o${x},${y}`}
+                x={x - 0.5}
+                y={py(y) - 0.5}
+                width={1}
+                height={1}
+                fill={THEME.ownership[o > 0 ? "B" : "W"]}
+                opacity={alpha}
+              />,
             );
           }
         }
@@ -127,7 +183,12 @@ export function Board() {
 
     // ---------------------------------------------------- policy
     let policy = cn.policy;
-    if (!policy && cn.parent?.policy && config.ui.players[cn.player].type === PLAYER_AI && config.ui.players[nextPlayer].type === PLAYER_AI) {
+    if (
+      !policy &&
+      cn.parent?.policy &&
+      config.ui.players[cn.player].type === PLAYER_AI &&
+      config.ui.players[nextPlayer].type === PLAYER_AI
+    ) {
       policy = cn.parent.policy; // AI self-play: allow one step out of date
     }
     if (toggles.policy && policy) {
@@ -144,13 +205,21 @@ export function Board() {
           items.push(
             <g key={`p${x},${y}`}>
               {big && <circle cx={x} cy={py(y)} r={STONE_R * THEME.hintScale * 0.98} fill={THEME.boardApprox} />}
-              <circle cx={x} cy={py(y)} r={STONE_R * THEME.hintScale * (big ? 0.95 : 0.5)} fill={colors[Math.min(order, colors.length - 1)]} opacity={THEME.policyAlpha} />
+              <circle
+                cx={x}
+                cy={py(y)}
+                r={STONE_R * THEME.hintScale * (big ? 0.95 : 0.5)}
+                fill={colors[Math.min(order, colors.length - 1)]}
+                opacity={THEME.policyAlpha}
+              />
               {big && (
                 <text x={x} y={py(y)} className="hint-text single">
                   {`${(100 * p).toFixed(2).slice(0, 4)}%`}
                 </text>
               )}
-              {p === best && <circle cx={x} cy={py(y)} r={STONE_R - 0.03} className="top-ring" opacity={THEME.policyAlpha} />}
+              {p === best && (
+                <circle cx={x} cy={py(y)} r={STONE_R - 0.03} className="top-ring" opacity={THEME.policyAlpha} />
+              )}
             </g>,
           );
         }
@@ -221,7 +290,9 @@ export function Board() {
     }
     if (hintMoves.length) {
       const childMoves = new Set(cn.children.map((c) => c.move?.gtp()).filter(Boolean));
-      const show = [trainer.top_moves_show, trainer.top_moves_show_secondary].filter((o) => o && o !== TOP_MOVE_NOTHING);
+      const show = [trainer.top_moves_show, trainer.top_moves_show_secondary].filter(
+        (o) => o && o !== TOP_MOVE_NOTHING,
+      );
       const sign = GameNode.playerSign(nextPlayer);
       const items: ReactNode[] = [];
       for (const d of hintMoves) {
@@ -279,12 +350,25 @@ export function Board() {
       for (const child of cn.children) {
         const m = child.move;
         if (!m?.coords) continue;
-        if (child.analysisExists) hintTargets.push({ coords: m.coords, pv: [m.gtp(), ...(child.candidateMoves[0]?.pv ?? [])] });
+        if (child.analysisExists)
+          hintTargets.push({ coords: m.coords, pv: [m.gtp(), ...(child.candidateMoves[0]?.pv ?? [])] });
         const top = topMoveCoords && m.sameCoords(new Move(topMoveCoords));
         items.push(
           <g key={`c${child.id}`}>
-            {!top && <circle cx={m.coords[0]} cy={py(m.coords[1])} r={STONE_R - 0.03} className={`child-ring contrast-${child.player}`} />}
-            <circle cx={m.coords[0]} cy={py(m.coords[1])} r={STONE_R - 0.03} className={`child-ring dashed-${child.player} ${top ? "short" : ""}`} />
+            {!top && (
+              <circle
+                cx={m.coords[0]}
+                cy={py(m.coords[1])}
+                r={STONE_R - 0.03}
+                className={`child-ring contrast-${child.player}`}
+              />
+            )}
+            <circle
+              cx={m.coords[0]}
+              cy={py(m.coords[1])}
+              r={STONE_R - 0.03}
+              className={`child-ring dashed-${child.player} ${top ? "short" : ""}`}
+            />
           </g>,
         );
       }
@@ -294,11 +378,31 @@ export function Board() {
     // ---------------------------------------------------- region of interest
     if (game.regionOfInterest) {
       const [xmin, xmax, ymin, ymax] = game.regionOfInterest;
-      layers.push(<rect key="roi" x={xmin - 0.5} y={py(ymax) - 0.5} width={xmax - xmin + 1} height={ymax - ymin + 1} className="roi" />);
+      layers.push(
+        <rect
+          key="roi"
+          x={xmin - 0.5}
+          y={py(ymax) - 0.5}
+          width={xmax - xmin + 1}
+          height={ymax - ymin + 1}
+          className="roi"
+        />,
+      );
     }
 
     return { layers, hintTargets, sx, sy, py, stoneGrid, endResult, nextPlayer };
-  }, [game, tick, toggles, trainer, theme, config.ui.players, config.trainer.show_move_numbers, teachingStatus, showCoords]);
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- the game changes in place: tick counts its changes
+  }, [
+    game,
+    tick,
+    toggles,
+    trainer,
+    theme,
+    config.ui.players,
+    config.trainer.show_move_numbers,
+    teachingStatus,
+    showCoords,
+  ]);
 
   if (!game || !content) return <div className="board-wrap" />;
   const { layers, hintTargets, sx, sy, py, stoneGrid, endResult, nextPlayer } = content;
@@ -434,7 +538,8 @@ function Stone(props: {
   let mark: ReactNode = null;
   if (ownership !== null && ownership !== undefined) {
     const owner: Player = ownership > 0 ? "B" : "W";
-    opacity = player === owner ? THEME.stoneMinAlpha + (1 - THEME.stoneMinAlpha) * Math.abs(ownership) : THEME.stoneMinAlpha;
+    opacity =
+      player === owner ? THEME.stoneMinAlpha + (1 - THEME.stoneMinAlpha) * Math.abs(ownership) : THEME.stoneMinAlpha;
     if (player !== owner) {
       const size = THEME.markSize * Math.abs(ownership) * STONE_R * 2;
       mark = <rect x={x - size / 2} y={y - size / 2} width={size} height={size} className={`mark mark-${owner}`} />;

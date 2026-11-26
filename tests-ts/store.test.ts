@@ -10,7 +10,15 @@ vi.mock("../src/state/platform", () => ({
   },
 }));
 
-import { analyzeExtra, loadGameFromString, newGame, setPlayer, setStatus, updateConfig, useStore } from "../src/state/store";
+import {
+  analyzeExtra,
+  loadGameFromString,
+  newGame,
+  setPlayer,
+  setStatus,
+  updateConfig,
+  useStore,
+} from "../src/state/store";
 
 const players = () => useStore.getState().config.ui.players;
 const savedPlayers = () => JSON.parse(saved.at(-1)!).ui.players;

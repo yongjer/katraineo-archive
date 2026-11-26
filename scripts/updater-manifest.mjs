@@ -15,7 +15,7 @@ export const REQUIRED_PLATFORMS = ["darwin-aarch64", "darwin-x86_64", "linux-x86
 /** The manifest keys an installer serves, from its file name. */
 export function platformsFor(name) {
   if (name.endsWith(".app.tar.gz")) {
-    const arch = /_aarch64\.app\.tar\.gz$/.test(name) ? "aarch64" : /_x64\.app\.tar\.gz$/.test(name) ? "x86_64" : null;
+    const arch = name.endsWith("_aarch64.app.tar.gz") ? "aarch64" : name.endsWith("_x64.app.tar.gz") ? "x86_64" : null;
     return arch ? [`darwin-${arch}`, `darwin-${arch}-app`] : [];
   }
   if (name.endsWith("-setup.exe")) return ["windows-x86_64", "windows-x86_64-nsis"];
@@ -45,7 +45,10 @@ export function buildManifest({ version, notes, pubDate, baseUrl, files }) {
     if (bound !== version) throw new Error(`${name} is signed for version ${bound ?? "(none)"}, not ${version}`);
     for (const key of keys) {
       if (platforms[key]) throw new Error(`${key} is served by both ${platforms[key].url} and ${name}`);
-      platforms[key] = { signature: signature.trim(), url: `${baseUrl.replace(/\/$/, "")}/${encodeURIComponent(name)}` };
+      platforms[key] = {
+        signature: signature.trim(),
+        url: `${baseUrl.replace(/\/$/, "")}/${encodeURIComponent(name)}`,
+      };
     }
   }
   const missing = REQUIRED_PLATFORMS.filter((p) => !platforms[p]);

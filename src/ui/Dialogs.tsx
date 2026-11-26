@@ -2,7 +2,13 @@
 
 import { useEffect, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { aiRankEstimation, rankLabel } from "../core/ai";
-import { AI_STRATEGIES_AVAILABLE, AI_STRATEGIES_HUMAN_MODEL, PLAYER_AI, TOP_MOVE_OPTIONS, type Player } from "../core/constants";
+import {
+  AI_STRATEGIES_AVAILABLE,
+  AI_STRATEGIES_HUMAN_MODEL,
+  PLAYER_AI,
+  TOP_MOVE_OPTIONS,
+  type Player,
+} from "../core/constants";
 import { t, tf } from "../core/i18n";
 import { ENGINE_BACKENDS, resolveEngineBackend } from "../core/engine";
 import { gameReport, REPORT_FILTERS } from "../core/report";
@@ -26,7 +32,17 @@ import { ModelPicker } from "./ModelPicker";
 import { EVAL_COLORS } from "./theme";
 
 /** `footer` stays in view below the scrolling body. */
-function Modal({ title, children, onClose, footer }: { title: string; children: ReactNode; onClose: () => void; footer?: ReactNode }) {
+function Modal({
+  title,
+  children,
+  onClose,
+  footer,
+}: {
+  title: string;
+  children: ReactNode;
+  onClose: () => void;
+  footer?: ReactNode;
+}) {
   return (
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal" role="dialog" aria-label={title}>
@@ -62,7 +78,10 @@ function NumberInput({
   value,
   onValue,
   ...props
-}: { value: number; onValue: (v: number) => void } & Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "type">) {
+}: { value: number; onValue: (v: number) => void } & Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  "value" | "onChange" | "type"
+>) {
   const [text, setText] = useState<string | null>(null);
   return (
     <input
@@ -94,14 +113,23 @@ export function NewGameDialog() {
   const [handicap, setHandicap] = useState(String(cfg.handicap));
   const [rules, setRules] = useState(cfg.rules);
   const close = () => openDialog(null);
-  const valid = /^\d{1,2}(:\d{1,2})?$/.test(size.trim()) && size.split(":").every((v) => +v >= 2 && +v <= 52) && !Number.isNaN(parseFloat(komi));
+  const valid =
+    /^\d{1,2}(:\d{1,2})?$/.test(size.trim()) &&
+    size.split(":").every((v) => +v >= 2 && +v <= 52) &&
+    !Number.isNaN(parseFloat(komi));
   const setupValid = mode === "newgame" || (parseInt(setupMove, 10) > 0 && !Number.isNaN(parseFloat(setupScore)));
   const settings = () => ({ size: size.trim(), komi: parseFloat(komi), handicap: parseInt(handicap, 10), rules });
   return (
     <Modal title={t("New Game title")} onClose={close}>
       <div className="tabs" role="tablist">
         {(["newgame", "setupposition"] as const).map((m) => (
-          <button key={m} role="tab" aria-selected={mode === m} className={mode === m ? "active" : ""} onClick={() => setMode(m)}>
+          <button
+            key={m}
+            role="tab"
+            aria-selected={mode === m}
+            className={mode === m ? "active" : ""}
+            onClick={() => setMode(m)}
+          >
             {t(m)}
           </button>
         ))}
@@ -116,11 +144,13 @@ export function NewGameDialog() {
       </Field>
       <Field label={t("handicap")}>
         <select value={handicap} onChange={(e) => setHandicap(e.target.value)}>
-          {Array.from({ length: 10 }, (_, i) => i).filter((i) => i !== 1).map((i) => (
-            <option key={i} value={i}>
-              {i}
-            </option>
-          ))}
+          {Array.from({ length: 10 }, (_, i) => i)
+            .filter((i) => i !== 1)
+            .map((i) => (
+              <option key={i} value={i}>
+                {i}
+              </option>
+            ))}
         </select>
       </Field>
       <Field label={t("komi")}>
@@ -227,14 +257,26 @@ export function SettingsDialog() {
         </select>
       </Field>
       <Field label={t("load sgf rewind")}>
-        <input type="checkbox" checked={draft.general.load_sgf_rewind} onChange={(ev) => edit((c) => void (c.general.load_sgf_rewind = ev.target.checked))} />
+        <input
+          type="checkbox"
+          checked={draft.general.load_sgf_rewind}
+          onChange={(ev) => edit((c) => void (c.general.load_sgf_rewind = ev.target.checked))}
+        />
       </Field>
       <Field label={t("load sgf fast analysis")}>
-        <input type="checkbox" checked={draft.general.load_fast_analysis} onChange={(ev) => edit((c) => void (c.general.load_fast_analysis = ev.target.checked))} />
+        <input
+          type="checkbox"
+          checked={draft.general.load_fast_analysis}
+          onChange={(ev) => edit((c) => void (c.general.load_fast_analysis = ev.target.checked))}
+        />
       </Field>
       {platform.isDesktop && (
         <Field label={t("check for updates")}>
-          <input type="checkbox" checked={draft.general.check_for_updates} onChange={(ev) => edit((c) => void (c.general.check_for_updates = ev.target.checked))} />
+          <input
+            type="checkbox"
+            checked={draft.general.check_for_updates}
+            onChange={(ev) => edit((c) => void (c.general.check_for_updates = ev.target.checked))}
+          />
         </Field>
       )}
 
@@ -242,7 +284,13 @@ export function SettingsDialog() {
       <div className="backend-tabs">
         <div className="tabs" role="tablist">
           {ENGINE_BACKENDS.map((b) => (
-            <button key={b} role="tab" aria-selected={backend === b} className={backend === b ? "active" : ""} onClick={() => edit((c) => void (c.engine.backend = b))}>
+            <button
+              key={b}
+              role="tab"
+              aria-selected={backend === b}
+              className={backend === b ? "active" : ""}
+              onClick={() => edit((c) => void (c.engine.backend = b))}
+            >
               {t(`engine:tab:${b}`)}
             </button>
           ))}
@@ -252,7 +300,11 @@ export function SettingsDialog() {
       {backend === "local" && (
         <>
           <Field label={t("engine:katago")} hint={t("engine:katago:hint")}>
-            <input value={e.katago} onChange={(ev) => edit((c) => void (c.engine.katago = ev.target.value))} spellCheck={false} />
+            <input
+              value={e.katago}
+              onChange={(ev) => edit((c) => void (c.engine.katago = ev.target.value))}
+              spellCheck={false}
+            />
           </Field>
           <ModelPicker
             model={e.model}
@@ -263,15 +315,27 @@ export function SettingsDialog() {
           {!platform.isDesktop && (
             <>
               <Field label={t("engine:model")}>
-                <input value={e.model} onChange={(ev) => edit((c) => void (c.engine.model = ev.target.value))} spellCheck={false} />
+                <input
+                  value={e.model}
+                  onChange={(ev) => edit((c) => void (c.engine.model = ev.target.value))}
+                  spellCheck={false}
+                />
               </Field>
               <Field label={t("engine:humanlike_model")}>
-                <input value={e.humanlike_model} onChange={(ev) => edit((c) => void (c.engine.humanlike_model = ev.target.value))} spellCheck={false} />
+                <input
+                  value={e.humanlike_model}
+                  onChange={(ev) => edit((c) => void (c.engine.humanlike_model = ev.target.value))}
+                  spellCheck={false}
+                />
               </Field>
             </>
           )}
           <Field label={t("engine:config")}>
-            <input value={e.config} onChange={(ev) => edit((c) => void (c.engine.config = ev.target.value))} spellCheck={false} />
+            <input
+              value={e.config}
+              onChange={(ev) => edit((c) => void (c.engine.config = ev.target.value))}
+              spellCheck={false}
+            />
           </Field>
         </>
       )}
@@ -287,20 +351,42 @@ export function SettingsDialog() {
       )}
       {backend === "custom" && (
         <Field label={t("engine:altcommand")} hint={t("engine:altcommand:hint")}>
-          <input value={e.altcommand} onChange={(ev) => edit((c) => void (c.engine.altcommand = ev.target.value))} spellCheck={false} />
+          <input
+            value={e.altcommand}
+            onChange={(ev) => edit((c) => void (c.engine.altcommand = ev.target.value))}
+            spellCheck={false}
+          />
         </Field>
       )}
       <Field label={t("engine:max_visits")}>
-        <NumberInput min={1} value={e.max_visits} onValue={(v) => edit((c) => void (c.engine.max_visits = Math.max(1, Math.round(v))))} />
+        <NumberInput
+          min={1}
+          value={e.max_visits}
+          onValue={(v) => edit((c) => void (c.engine.max_visits = Math.max(1, Math.round(v))))}
+        />
       </Field>
       <Field label={t("engine:fast_visits")}>
-        <NumberInput min={1} value={e.fast_visits} onValue={(v) => edit((c) => void (c.engine.fast_visits = Math.max(1, Math.round(v))))} />
+        <NumberInput
+          min={1}
+          value={e.fast_visits}
+          onValue={(v) => edit((c) => void (c.engine.fast_visits = Math.max(1, Math.round(v))))}
+        />
       </Field>
       <Field label={t("engine:max_time")} hint={t("engine:time:hint")}>
-        <NumberInput min={0.1} step={0.5} value={e.max_time} onValue={(v) => edit((c) => void (c.engine.max_time = v))} />
+        <NumberInput
+          min={0.1}
+          step={0.5}
+          value={e.max_time}
+          onValue={(v) => edit((c) => void (c.engine.max_time = v))}
+        />
       </Field>
       <Field label={t("engine:wide_root_noise")} hint={t("engine:wide_root_noise:hint")}>
-        <NumberInput min={0} step={0.01} value={e.wide_root_noise} onValue={(v) => edit((c) => void (c.engine.wide_root_noise = v))} />
+        <NumberInput
+          min={0}
+          step={0.01}
+          value={e.wide_root_noise}
+          onValue={(v) => edit((c) => void (c.engine.wide_root_noise = v))}
+        />
       </Field>
 
       <h3>{t("teacher settings")}</h3>
@@ -324,13 +410,25 @@ export function SettingsDialog() {
         ))}
       </div>
       <Field label={t("show last n dots")}>
-        <NumberInput min={0} value={tr.eval_on_show_last} onValue={(v) => edit((c) => void (c.trainer.eval_on_show_last = Math.max(0, Math.round(v))))} />
+        <NumberInput
+          min={0}
+          value={tr.eval_on_show_last}
+          onValue={(v) => edit((c) => void (c.trainer.eval_on_show_last = Math.max(0, Math.round(v))))}
+        />
       </Field>
       <Field label={t("show ai dots")}>
-        <input type="checkbox" checked={tr.eval_show_ai} onChange={(ev) => edit((c) => void (c.trainer.eval_show_ai = ev.target.checked))} />
+        <input
+          type="checkbox"
+          checked={tr.eval_show_ai}
+          onChange={(ev) => edit((c) => void (c.trainer.eval_show_ai = ev.target.checked))}
+        />
       </Field>
       <Field label={t("show move numbers")}>
-        <input type="checkbox" checked={tr.show_move_numbers} onChange={(ev) => edit((c) => void (c.trainer.show_move_numbers = ev.target.checked))} />
+        <input
+          type="checkbox"
+          checked={tr.show_move_numbers}
+          onChange={(ev) => edit((c) => void (c.trainer.show_move_numbers = ev.target.checked))}
+        />
       </Field>
       <Field label={t("stats on top move")}>
         <span className="pair">
@@ -346,27 +444,64 @@ export function SettingsDialog() {
         </span>
       </Field>
       <Field label={t("show stats if")}>
-        <NumberInput min={0} value={tr.low_visits} onValue={(v) => edit((c) => void (c.trainer.low_visits = Math.max(0, Math.round(v))))} />
+        <NumberInput
+          min={0}
+          value={tr.low_visits}
+          onValue={(v) => edit((c) => void (c.trainer.low_visits = Math.max(0, Math.round(v))))}
+        />
       </Field>
       <Field label={t("show two digits for point loss near zero")}>
-        <input type="checkbox" checked={tr.extra_precision} onChange={(ev) => edit((c) => void (c.trainer.extra_precision = ev.target.checked))} />
+        <input
+          type="checkbox"
+          checked={tr.extra_precision}
+          onChange={(ev) => edit((c) => void (c.trainer.extra_precision = ev.target.checked))}
+        />
       </Field>
       <Field label={t("cache analysis to sgf")}>
-        <input type="checkbox" checked={tr.save_analysis} onChange={(ev) => edit((c) => void (c.trainer.save_analysis = ev.target.checked))} />
+        <input
+          type="checkbox"
+          checked={tr.save_analysis}
+          onChange={(ev) => edit((c) => void (c.trainer.save_analysis = ev.target.checked))}
+        />
       </Field>
-      <p className="muted">{platform.isDesktop ? t("config file path") + " config.json" : "Settings are stored in this browser."}</p>
+      <p className="muted">
+        {platform.isDesktop ? t("config file path") + " config.json" : "Settings are stored in this browser."}
+      </p>
     </Modal>
   );
 }
 
-function ThresholdRow({ i, thr, draft, edit }: { i: number; thr: number; draft: AppConfig; edit: (f: (c: AppConfig) => void) => void }) {
+function ThresholdRow({
+  i,
+  thr,
+  draft,
+  edit,
+}: {
+  i: number;
+  thr: number;
+  draft: AppConfig;
+  edit: (f: (c: AppConfig) => void) => void;
+}) {
   const colors = EVAL_COLORS[draft.trainer.theme] ?? EVAL_COLORS["theme:normal"];
   return (
     <>
-      <NumberInput step={0.5} min={0} value={thr} onValue={(v) => edit((c) => void (c.trainer.eval_thresholds[i] = Math.max(0, v)))} />
+      <NumberInput
+        step={0.5}
+        min={0}
+        value={thr}
+        onValue={(v) => edit((c) => void (c.trainer.eval_thresholds[i] = Math.max(0, v)))}
+      />
       <span className="swatch" style={{ background: colors[i] }} />
-      <input type="checkbox" checked={draft.trainer.show_dots[i]} onChange={(ev) => edit((c) => void (c.trainer.show_dots[i] = ev.target.checked))} />
-      <input type="checkbox" checked={draft.trainer.save_feedback[i]} onChange={(ev) => edit((c) => void (c.trainer.save_feedback[i] = ev.target.checked))} />
+      <input
+        type="checkbox"
+        checked={draft.trainer.show_dots[i]}
+        onChange={(ev) => edit((c) => void (c.trainer.show_dots[i] = ev.target.checked))}
+      />
+      <input
+        type="checkbox"
+        checked={draft.trainer.save_feedback[i]}
+        onChange={(ev) => edit((c) => void (c.trainer.save_feedback[i] = ev.target.checked))}
+      />
       <NumberInput
         step={0.1}
         min={0}
@@ -380,7 +515,9 @@ function ThresholdRow({ i, thr, draft, edit }: { i: number; thr: number; draft: 
 export function AiSettingsDialog() {
   const config = useStore((s) => s.config);
   const players = config.ui.players;
-  const [strategy, setStrategy] = useState<string>(players.W.type === "player:ai" ? players.W.strategy : players.B.strategy);
+  const [strategy, setStrategy] = useState<string>(
+    players.W.type === "player:ai" ? players.W.strategy : players.B.strategy,
+  );
   const [draft, setDraft] = useState(() => structuredClone(config.ai));
   const settings = draft[strategy] ?? {};
   const close = () => openDialog(null);
@@ -405,9 +542,17 @@ export function AiSettingsDialog() {
       {Object.entries(settings).map(([key, value]) => (
         <Field key={key} label={key.replace(/_/g, " ")}>
           {typeof value === "boolean" ? (
-            <input type="checkbox" checked={value} onChange={(e) => setDraft((d) => ({ ...d, [strategy]: { ...d[strategy], [key]: e.target.checked } }))} />
+            <input
+              type="checkbox"
+              checked={value}
+              onChange={(e) => setDraft((d) => ({ ...d, [strategy]: { ...d[strategy], [key]: e.target.checked } }))}
+            />
           ) : (
-            <NumberInput step="any" value={value as number} onValue={(v) => setDraft((d) => ({ ...d, [strategy]: { ...d[strategy], [key]: v } }))} />
+            <NumberInput
+              step="any"
+              value={value as number}
+              onValue={(v) => setDraft((d) => ({ ...d, [strategy]: { ...d[strategy], [key]: v } }))}
+            />
           )}
         </Field>
       ))}
@@ -464,7 +609,11 @@ export function TimerDialog() {
         <NumberInput min={0} value={draft.minimal_use} onValue={(v) => num("minimal_use", v, 0)} />
       </Field>
       <Field label={t("count down sound")}>
-        <input type="checkbox" checked={draft.sound} onChange={(e) => setDraft((d) => ({ ...d, sound: e.target.checked }))} />
+        <input
+          type="checkbox"
+          checked={draft.sound}
+          onChange={(e) => setDraft((d) => ({ ...d, sound: e.target.checked }))}
+        />
       </Field>
       <div className="modal-actions">
         <button
@@ -518,11 +667,26 @@ function darken(hex: string, f = 0.75) {
 }
 
 /** A table cell with a bar showing value/scale, growing from the middle column outwards (TableStatLabel). */
-function StatCell({ text, value, scale, color, side }: { text: string; value: number; scale: number; color: string; side: "left" | "right" }) {
+function StatCell({
+  text,
+  value,
+  scale,
+  color,
+  side,
+}: {
+  text: string;
+  value: number;
+  scale: number;
+  color: string;
+  side: "left" | "right";
+}) {
   const pct = Math.max(0, Math.min(1, value / scale)) * 100;
   return (
     <div className={`report-cell report-stat ${side}`}>
-      <div className="report-bar" style={{ width: `${pct}%`, background: color, [side === "left" ? "right" : "left"]: 0 }} />
+      <div
+        className="report-bar"
+        style={{ width: `${pct}%`, background: color, [side === "left" ? "right" : "left"]: 0 }}
+      />
       <span>{text}</span>
     </div>
   );
@@ -542,7 +706,13 @@ export function ReportDialog() {
   const { sumStats, histogram, playerPtloss } = gameReport(game.currentNode, thresholds, REPORT_FILTERS[filter]);
   const colors = (EVAL_COLORS[config.trainer.theme] ?? EVAL_COLORS["theme:normal"]).map((c) => darken(c));
   const labels = thresholds.map((pt) => (pt > 0 ? `≥ ${pt}` : `< ${thresholds.at(-2)}`));
-  const stats: [string, (v: number) => string, "accuracy" | "mean_ptloss" | "ai_top_move" | "ai_top5_move", number, boolean][] = [
+  const stats: [
+    string,
+    (v: number) => string,
+    "accuracy" | "mean_ptloss" | "ai_top_move" | "ai_top5_move",
+    number,
+    boolean,
+  ][] = [
     ["accuracy", (v) => v.toFixed(1), "accuracy", 100, true],
     ["meanpointloss", (v) => v.toFixed(2), "mean_ptloss", 5, false],
     ["aitopmove", pct1, "ai_top_move", 1, true],
@@ -557,7 +727,13 @@ export function ReportDialog() {
     <Modal title={t("analysis:report")} onClose={close}>
       <div className="tabs report-filters" role="tablist">
         {Object.keys(REPORT_FILTERS).map((f) => (
-          <button key={f} role="tab" aria-selected={filter === f} className={filter === f ? "active" : ""} onClick={() => setFilter(f)}>
+          <button
+            key={f}
+            role="tab"
+            aria-selected={filter === f}
+            className={filter === f ? "active" : ""}
+            onClick={() => setFilter(f)}
+          >
             {t(f)}
           </button>
         ))}
@@ -567,12 +743,16 @@ export function ReportDialog() {
           const setup = players[p];
           const isAi = setup.type === PLAYER_AI;
           const name = game.root.getProperty(`P${p}`);
-          const rank = isAi ? rankLabel(aiRankEstimation(setup.strategy, config.ai[setup.strategy] ?? {})) : game.root.getProperty(`${p}R`);
+          const rank = isAi
+            ? rankLabel(aiRankEstimation(setup.strategy, config.ai[setup.strategy] ?? {}))
+            : game.root.getProperty(`${p}R`);
           return (
             <div key={p} className={`report-player ${p === "W" ? "right" : ""}`}>
               <div className={`player-stone stone-${p}`} />
               <div>
-                <div className="player-name">{name && !name.includes("ㅤ") ? name : isAi ? t(setup.strategy) : t(setup.subtype)}</div>
+                <div className="player-name">
+                  {name && !name.includes("ㅤ") ? name : isAi ? t(setup.strategy) : t(setup.subtype)}
+                </div>
                 <div className="muted">
                   {t(setup.type)}
                   {rank ? ` · ${rank}` : ""}
@@ -590,9 +770,16 @@ export function ReportDialog() {
           sides.flatMap(([p, side], i) => {
             const v = sumStats[p][key];
             const other = sumStats[p === "B" ? "W" : "B"][key] ?? 0;
-            const better = ((v ?? 0) < other) !== moreIsBetter;
+            const better = (v ?? 0) < other !== moreIsBetter;
             const cell = (
-              <StatCell key={`${label}${p}`} side={side} text={v === undefined ? "" : fmt(v)} value={v ?? 0} scale={scale} color={better ? STAT_BETTER : STAT_WORSE} />
+              <StatCell
+                key={`${label}${p}`}
+                side={side}
+                text={v === undefined ? "" : fmt(v)}
+                value={v ?? 0}
+                scale={scale}
+                color={better ? STAT_BETTER : STAT_WORSE}
+              />
             );
             return i === 0
               ? [
@@ -608,11 +795,25 @@ export function ReportDialog() {
         <div className="report-cell report-header">{t("stats:pointslost")}</div>
         <div className="report-cell report-header">{t("header:num moves")}</div>
         {[...thresholds.keys()].reverse().map((ti, i) => [
-          <StatCell key={`hb${ti}`} side="left" text={String(histogram[i].B)} value={histogram[i].B} scale={playerPtloss.B.length + 1e-6} color={colors[ti]} />,
+          <StatCell
+            key={`hb${ti}`}
+            side="left"
+            text={String(histogram[i].B)}
+            value={histogram[i].B}
+            scale={playerPtloss.B.length + 1e-6}
+            color={colors[ti]}
+          />,
           <div key={`hl${ti}`} className="report-cell report-label" style={{ background: colors[ti] }}>
             {labels[ti]}
           </div>,
-          <StatCell key={`hw${ti}`} side="right" text={String(histogram[i].W)} value={histogram[i].W} scale={playerPtloss.W.length + 1e-6} color={colors[ti]} />,
+          <StatCell
+            key={`hw${ti}`}
+            side="right"
+            text={String(histogram[i].W)}
+            value={histogram[i].W}
+            scale={playerPtloss.W.length + 1e-6}
+            color={colors[ti]}
+          />,
         ])}
       </div>
     </Modal>
@@ -699,7 +900,9 @@ export function UpdateDialog() {
             <span>{t("update:downloading")}</span>
           </div>
         )}
-        {phase === "error" && <p className="update-error">{tf(info ? "update:failed" : "update:check-failed", { error: error ?? "" })}</p>}
+        {phase === "error" && (
+          <p className="update-error">{tf(info ? "update:failed" : "update:check-failed", { error: error ?? "" })}</p>
+        )}
       </div>
     </Modal>
   );

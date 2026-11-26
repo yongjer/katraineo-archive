@@ -53,8 +53,13 @@ npm run tauri dev        # desktop app with hot reload
 npm run tauri build      # installers in src-tauri/target/release/bundle
 npm test                 # unit tests
 npm run typecheck
+npm run lint             # Oxlint, with the React hooks rules (.oxlintrc.json)
+npm run format           # Prettier; CI runs `npm run format:check`
 cargo test --manifest-path src-tauri/Cargo.toml
 ```
+
+ESLint is not used: typescript-eslint needs TypeScript's JavaScript API, which TypeScript 7 no longer has. To see the
+code before the Prettier reformatting in `git blame`, run `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 
 KataGo is bundled for Windows and Linux (`resources/KataGo`). For macOS, `scripts/build-katago-macos.sh` builds it
 from source (Metal on Apple Silicon, OpenCL on Intel) with its Homebrew libraries copied next to it, as CI does;

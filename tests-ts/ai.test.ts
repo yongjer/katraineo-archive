@@ -38,7 +38,13 @@ const info = (move: string, order: number, scoreLead: number, extra: Partial<Mov
 
 function analyzedGame(engine: KataGoEngine, moves: MoveInfo[], root = { visits: 100, winrate: 0.5, scoreLead: 0 }) {
   const g = new Game(host, engine, { moveTree: new GameNode(null, { SZ: 9 }) });
-  g.currentNode.setAnalysis({ id: "x", moveInfos: moves, rootInfo: root, policy: new Array(82).fill(0.01), ownership: new Array(81).fill(0) });
+  g.currentNode.setAnalysis({
+    id: "x",
+    moveInfos: moves,
+    rootInfo: root,
+    policy: new Array(82).fill(0.01),
+    ownership: new Array(81).fill(0),
+  });
   return g;
 }
 
@@ -56,7 +62,9 @@ describe("KataJigo", () => {
 describe("AntiMirror", () => {
   it("asks KataGo for antiMirror analysis and plays its top move", async () => {
     const { engine, aiRequests } = fakeEngine((_n, req) =>
-      req.extraSettings?.antiMirror ? { id: "a", moveInfos: [info("G3", 0, 1)], rootInfo: { visits: 10, winrate: 0.5, scoreLead: 1 } } : null,
+      req.extraSettings?.antiMirror
+        ? { id: "a", moveInfos: [info("G3", 0, 1)], rootInfo: { visits: 10, winrate: 0.5, scoreLead: 1 } }
+        : null,
     );
     const g = analyzedGame(engine, [info("E5", 0, 1)]);
     const played = await generateAiMove(g, AI_ANTIMIRROR, {});
@@ -91,14 +99,20 @@ describe("Simple Style", () => {
       rootInfo: { visits: 100, winrate: 0.5, scoreLead: 0 },
     });
     // F6 is adjacent to white's E6 and has no own stone in KaTrain's (asymmetric) support area
-    const played = await generateAiMove(g, AI_SIMPLE_OWNERSHIP, { ...settings(AI_SIMPLE_OWNERSHIP), attach_penalty: 5, tenuki_penalty: 0 });
+    const played = await generateAiMove(g, AI_SIMPLE_OWNERSHIP, {
+      ...settings(AI_SIMPLE_OWNERSHIP),
+      attach_penalty: 5,
+      tenuki_penalty: 0,
+    });
     expect(played!.move!.gtp()).toBe("C3");
   });
 
   it("explains when KataGo gave no per-move ownership", async () => {
     const { engine } = fakeEngine(() => null);
     const g = analyzedGame(engine, [info("E5", 0, 0), info("C3", 1, -0.5)]);
-    await expect(generateAiMove(g, AI_SIMPLE_OWNERSHIP, settings(AI_SIMPLE_OWNERSHIP))).rejects.toThrow(/per-move ownership/);
+    await expect(generateAiMove(g, AI_SIMPLE_OWNERSHIP, settings(AI_SIMPLE_OWNERSHIP))).rejects.toThrow(
+      /per-move ownership/,
+    );
   });
 });
 
@@ -133,9 +147,15 @@ describe("Human-like and Historical Pro", () => {
   });
 
   it("tells the user to set up the human-like model when KataGo has none", async () => {
-    const { engine } = fakeEngine(() => ({ id: "h", moveInfos: [info("E5", 0, 0)], rootInfo: { visits: 1, winrate: 0.5, scoreLead: 0 } }));
+    const { engine } = fakeEngine(() => ({
+      id: "h",
+      moveInfos: [info("E5", 0, 0)],
+      rootInfo: { visits: 1, winrate: 0.5, scoreLead: 0 },
+    }));
     const g = analyzedGame(engine, [info("E5", 0, 0)]);
-    await expect(generateAiMove(g, AI_HUMAN, { human_kyu_rank: 8, modern_style: false })).rejects.toThrow(/human model/);
+    await expect(generateAiMove(g, AI_HUMAN, { human_kyu_rank: 8, modern_style: false })).rejects.toThrow(
+      /human model/,
+    );
   });
 
   it("estimates human-like strength from the rank setting", () => {

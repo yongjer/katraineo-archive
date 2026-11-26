@@ -2,7 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { t, tf } from "../core/i18n";
-import { describeModel, DOWNLOADABLE_MODELS, fileName, isHumanModel, MODEL_ENDPOINTS, type ModelEntry } from "../core/models";
+import {
+  describeModel,
+  DOWNLOADABLE_MODELS,
+  fileName,
+  isHumanModel,
+  MODEL_ENDPOINTS,
+  type ModelEntry,
+} from "../core/models";
 import { platform, type DownloadProgress, type ModelFile } from "../state/platform";
 
 interface Props {
@@ -28,6 +35,7 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
   }, [model, humanlikeModel]);
 
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- refresh sets state only after it has listed the models
     void refresh();
   }, [refresh]);
 
@@ -65,7 +73,10 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
   };
 
   const download = (m: ModelEntry) => {
-    setProgress((prev) => ({ ...prev, [m.name]: { name: m.name, received: 0, total: null, done: false, error: null, path: null } }));
+    setProgress((prev) => ({
+      ...prev,
+      [m.name]: { name: m.name, received: 0, total: null, done: false, error: null, path: null },
+    }));
     platform
       .downloadModel(m.name, m.url)
       .then((path) => {
@@ -80,7 +91,13 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
   const options = (list: ModelFile[], current: string) => {
     const known = list.some((f) => f.path === current);
     return [
-      ...(current && !known ? [<option key={current} value={current}>{describeModel(current)}</option>] : []),
+      ...(current && !known
+        ? [
+            <option key={current} value={current}>
+              {describeModel(current)}
+            </option>,
+          ]
+        : []),
       ...list.map((f) => (
         <option key={f.path} value={f.path}>
           {describeModel(f.path)} ({mb(f.size)})
@@ -105,7 +122,11 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
           <label className="field">
             <span className="field-label">{t("engine:humanlike_model")}</span>
             <span className="field-input">
-              <select value={humanlikeModel} onChange={(e) => onHumanlikeModel(e.target.value)} aria-label={t("engine:humanlike_model")}>
+              <select
+                value={humanlikeModel}
+                onChange={(e) => onHumanlikeModel(e.target.value)}
+                aria-label={t("engine:humanlike_model")}
+              >
                 <option value="">—</option>
                 {options(human, humanlikeModel)}
               </select>
@@ -136,10 +157,16 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
                     ) : p ? (
                       <>
                         <progress max={p.total ?? undefined} value={p.total ? p.received : undefined} />
-                        <span>{p.total ? `${mb(p.received)} / ${mb(p.total)}` : p.received ? mb(p.received) : "…"}</span>
+                        <span>
+                          {p.total ? `${mb(p.received)} / ${mb(p.total)}` : p.received ? mb(p.received) : "…"}
+                        </span>
                       </>
                     ) : (
-                      <button className="text-button small" onClick={() => download(m)} aria-label={`${t("download models button")}: ${m.name}`}>
+                      <button
+                        className="text-button small"
+                        onClick={() => download(m)}
+                        aria-label={`${t("download models button")}: ${m.name}`}
+                      >
                         ↓
                       </button>
                     )}

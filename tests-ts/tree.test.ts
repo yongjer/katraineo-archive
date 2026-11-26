@@ -90,7 +90,11 @@ describe("teaching mode (analyze_undo)", () => {
 
   function setup(pointsLost: number, prompts = TRAINER.num_undo_prompts) {
     const statuses: [string, StatusLevel][] = [];
-    const h: GameHost = { ...host, trainer: () => ({ ...TRAINER, num_undo_prompts: prompts }), setStatus: (m, l) => statuses.push([m, l]) };
+    const h: GameHost = {
+      ...host,
+      trainer: () => ({ ...TRAINER, num_undo_prompts: prompts }),
+      setStatus: (m, l) => statuses.push([m, l]),
+    };
     const g = new Game(h, null, { moveTree: new GameNode(null, { SZ: 9 }) });
     g.root.setAnalysis(analysis(0));
     const node = g.play(Move.fromGtp("A1", "B"))!;

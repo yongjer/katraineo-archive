@@ -266,7 +266,10 @@ export class Game {
   /** Play a move from the current position. Throws IllegalMoveException if invalid. */
   play(move: Move, opts: { ignoreKo?: boolean; analyze?: boolean; expectedNode?: GameNode } = {}): GameNode | null {
     const [sx, sy] = this.boardSize;
-    if (!move.isPass && !(move.coords![0] >= 0 && move.coords![0] < sx && move.coords![1] >= 0 && move.coords![1] < sy)) {
+    if (
+      !move.isPass &&
+      !(move.coords![0] >= 0 && move.coords![0] < sx && move.coords![1] >= 0 && move.coords![1] < sy)
+    ) {
       throw new IllegalMoveException(`Move ${move} outside of board coordinates`);
     }
     if (opts.expectedNode && this.currentNode !== opts.expectedNode) return null;
@@ -414,8 +417,7 @@ export class Game {
     const count = (v: number) => scored.filter((s) => s === v).length;
     const unknown = scored.filter((s) => Number.isNaN(s)).length;
     const prisoners = this.prisonerCount;
-    const score =
-      [-2, -1, 0, 1, 2].reduce((acc, v) => acc + v * count(v), 0) + prisoners.W - prisoners.B - this.komi;
+    const score = [-2, -1, 0, 1, 2].reduce((acc, v) => acc + v * count(v), 0) + prisoners.W - prisoners.B - this.komi;
     if (unknown > 10 || count(0) - stones.size > 4 * (sx + sy)) return null;
     return cn.formatScore(score);
   }
@@ -445,7 +447,9 @@ export class Game {
       return;
     }
     const aboveInsertionRoot = new Set(insertAfter.parent!.nodesFromRoot);
-    const alreadyInserted = copyTo.nodesFromRoot.filter((n) => !aboveInsertionRoot.has(n) && n.move).map((n) => n.move!);
+    const alreadyInserted = copyTo.nodesFromRoot
+      .filter((n) => !aboveInsertionRoot.has(n) && n.move)
+      .map((n) => n.move!);
     try {
       for (;;) {
         for (const m of copyFrom.moveWithPlacements) {
@@ -516,14 +520,20 @@ export class Game {
             .filter((d, i) => d.pointsLost < maxLoss || i === 0)
             .map(
               (d) =>
-                [d, Math.exp(-0.5 * (Math.abs(d.scoreLead - target) / stddev) ** 2) * Math.exp(-0.5 * (Math.min(0, d.pointsLost) / maxLoss) ** 2)] as const,
+                [
+                  d,
+                  Math.exp(-0.5 * (Math.abs(d.scoreLead - target) / stddev) ** 2) *
+                    Math.exp(-0.5 * (Math.min(0, d.pointsLost) / maxLoss) ** 2),
+                ] as const,
             );
           info = weightedSelectionWithoutReplacement([...weighted], (w) => w[1], 1)[0][0];
           for (const [d, wt] of weighted) {
             thoughts += `Move option: ${d.move} score ${d.scoreLead.toFixed(2)} loss ${d.pointsLost.toFixed(2)} weight ${wt.toExponential(3)}\n`;
           }
         } else {
-          info = cands.reduce((best, d) => (Math.abs(d.scoreLead - target) < Math.abs(best.scoreLead - target) ? d : best));
+          info = cands.reduce((best, d) =>
+            Math.abs(d.scoreLead - target) < Math.abs(best.scoreLead - target) ? d : best,
+          );
           thoughts += `Move played to close difference between score ${node.score!.toFixed(1)} and target ${target.toFixed(1)} quickly.`;
         }
         move = Move.fromGtp(info.move, node.nextPlayer);
@@ -614,7 +624,8 @@ export class Game {
     const numUndos = i < prompts.length ? prompts[i] : 0;
     let undo: boolean;
     if (numUndos === 0) undo = false;
-    else if (numUndos < 1) undo = node.undoThreshold < numUndos && node.parent!.children.length === 1; // probability
+    else if (numUndos < 1)
+      undo = node.undoThreshold < numUndos && node.parent!.children.length === 1; // probability
     else undo = node.parent!.children.length <= numUndos;
     node.autoUndo = undo;
     if (undo) {
@@ -689,7 +700,10 @@ export class Game {
     }
   }
 
-  analyzeExtra(mode: ExtraAnalysisMode, kwargs: { mistakesOnly?: boolean; visits?: number; moveRange?: [number, number] | null } = {}) {
+  analyzeExtra(
+    mode: ExtraAnalysisMode,
+    kwargs: { mistakesOnly?: boolean; visits?: number; moveRange?: [number, number] | null } = {},
+  ) {
     const engine = this.engine;
     if (!engine) return;
     const cn = this.currentNode;
@@ -712,7 +726,12 @@ export class Game {
     if (mode === "extra") {
       const visits = cn.analysisVisitsRequested + engine.settings.max_visits;
       this.host.setStatus(tf("extra analysis", { visits }), "analysis");
-      this.analyze(cn, { visits, priority: PRIORITY_EXTRA_ANALYSIS, regionOfInterest: this.regionOfInterest, timeLimit: false });
+      this.analyze(cn, {
+        visits,
+        priority: PRIORITY_EXTRA_ANALYSIS,
+        regionOfInterest: this.regionOfInterest,
+        timeLimit: false,
+      });
       return;
     }
     if (mode === "game") {
@@ -728,7 +747,9 @@ export class Game {
         this.analyze(node, { visits, priority: -1_000_000, timeLimit: false, reportEvery: null });
       }
       this.host.setStatus(
-        range ? tf("move range analysis", { start_move: range[0], end_move: range[1], visits }) : tf("game re-analysis", { visits }),
+        range
+          ? tf("move range analysis", { start_move: range[0], end_move: range[1], visits })
+          : tf("game re-analysis", { visits }),
         "analysis",
       );
       return;
@@ -748,7 +769,8 @@ export class Game {
           }
         }
       }
-      if (policyGrid) analyzeMoves.sort((a, b) => policyGrid[b.coords![1]][b.coords![0]] - policyGrid[a.coords![1]][a.coords![0]]);
+      if (policyGrid)
+        analyzeMoves.sort((a, b) => policyGrid[b.coords![1]][b.coords![0]] - policyGrid[a.coords![1]][a.coords![0]]);
       visits = engine.settings.fast_visits;
       this.host.setStatus(tf("sweep analysis", { visits }), "analysis");
       priority = PRIORITY_SWEEP;

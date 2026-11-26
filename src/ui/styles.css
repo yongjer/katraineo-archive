@@ -12,7 +12,14 @@
   --winrate: #1acc1a;
   --radius: 6px;
   color-scheme: dark;
-  font-family: "Noto Sans", "Noto Sans TC", "Noto Sans CJK TC", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family:
+    "Noto Sans",
+    "Noto Sans TC",
+    "Noto Sans CJK TC",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
   font-size: 14px;
   color: var(--text);
   background: var(--bg);

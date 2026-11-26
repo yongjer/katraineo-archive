@@ -181,7 +181,8 @@ export class GameNode {
   /** Collapse the line between this node and a descendant, so the descendant shows as a direct child. */
   addShortcut(toNode: GameNode) {
     const nodes: GameNode[] = [toNode];
-    while (nodes[nodes.length - 1].parent && nodes[nodes.length - 1] !== this) nodes.push(nodes[nodes.length - 1].parent!);
+    while (nodes[nodes.length - 1].parent && nodes[nodes.length - 1] !== this)
+      nodes.push(nodes[nodes.length - 1].parent!);
     if (nodes[nodes.length - 1] === this && nodes.length > 2) {
       const via = nodes[nodes.length - 2];
       this.shortcutsTo.push([toNode, via]);
@@ -228,6 +229,7 @@ export class GameNode {
 
   get nodesFromRoot(): GameNode[] {
     const nodes: GameNode[] = [];
+    // oxlint-disable-next-line typescript/no-this-alias -- a walk up from this node
     for (let n: GameNode | null = this; n; n = n.parent) nodes.push(n);
     return nodes.reverse();
   }
@@ -296,7 +298,10 @@ export class GameNode {
         if (c) add(c);
         continue;
       }
-      const [from, to] = p.split(":").slice(0, 2).map((c) => Move.fromSgf(c, bs));
+      const [from, to] = p
+        .split(":")
+        .slice(0, 2)
+        .map((c) => Move.fromSgf(c, bs));
       for (let x = from.coords![0]; x <= to.coords![0]; x++) {
         for (let y = to.coords![1]; y <= from.coords![1]; y++) {
           if (x >= 0 && x < bs[0] && y >= 0 && y < bs[1]) add([x, y]);
@@ -368,7 +373,9 @@ export class GameNode {
         nearX -= 1;
         spacing = (farX - nearX) / (stonesPerRow - 1);
       }
-      const coords = [...new Set(Array.from({ length: stonesPerRow }, (_, i) => Math.floor(0.5 + nearX + i * spacing)))];
+      const coords = [
+        ...new Set(Array.from({ length: stonesPerRow }, (_, i) => Math.floor(0.5 + nearX + i * spacing))),
+      ];
       const cx = (bx - 1) / 2;
       const cy = (by - 1) / 2;
       stones = coords
@@ -531,9 +538,7 @@ export class GameNode {
     if (!moveDicts.length) {
       const polmoves = this.policyRanking;
       const top = polmoves && polmoves.length ? polmoves[0][1] : Move.pass();
-      return [
-        { ...root, pointsLost: 0, winrateLost: 0, order: 0, move: top.gtp(), pv: [top.gtp()] } as CandidateMove,
-      ]; // single visit -> go by policy/root
+      return [{ ...root, pointsLost: 0, winrateLost: 0, order: 0, move: top.gtp(), pv: [top.gtp()] } as CandidateMove]; // single visit -> go by policy/root
     }
     const sign = GameNode.playerSign(this.nextPlayer);
     const topMove = moveDicts.find((d) => d.order === 0);

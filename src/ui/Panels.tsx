@@ -1,8 +1,16 @@
 // Right-hand panels: player setup, move statistics, info & notes.
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { aiRankEstimation, rankLabel } from "../core/ai";
-import { AI_STRATEGIES_AVAILABLE, PLAYER_AI, PLAYER_HUMAN, PLAYING_NORMAL, PLAYING_TEACHING, type Player, type PlayerType } from "../core/constants";
+import {
+  AI_STRATEGIES_AVAILABLE,
+  PLAYER_AI,
+  PLAYER_HUMAN,
+  PLAYING_NORMAL,
+  PLAYING_TEACHING,
+  type Player,
+  type PlayerType,
+} from "../core/constants";
 import { t } from "../core/i18n";
 import { openDialog, setNote, setPlayer, useStore } from "../state/store";
 import { THEME, evalColor } from "./theme";
@@ -22,7 +30,9 @@ export function PlayersPanel() {
         const setup = players[p];
         const isAi = setup.type === PLAYER_AI;
         const name = game.root.getProperty(`P${p}`);
-        const rank = isAi ? rankLabel(aiRankEstimation(setup.strategy, ai[setup.strategy] ?? {})) : game.root.getProperty(`${p}R`);
+        const rank = isAi
+          ? rankLabel(aiRankEstimation(setup.strategy, ai[setup.strategy] ?? {}))
+          : game.root.getProperty(`${p}R`);
         return (
           <div key={p} className={`player-card ${next === p ? "to-move" : ""}`}>
             <div className={`player-stone stone-${p}`} />
@@ -37,13 +47,21 @@ export function PlayersPanel() {
                   <option value={PLAYER_AI}>{t(PLAYER_AI)}</option>
                 </select>
                 {!isAi && (
-                  <select value={setup.subtype} onChange={(e) => setPlayer(p, { subtype: e.target.value })} aria-label={t("gametype")}>
+                  <select
+                    value={setup.subtype}
+                    onChange={(e) => setPlayer(p, { subtype: e.target.value })}
+                    aria-label={t("gametype")}
+                  >
                     <option value={PLAYING_NORMAL}>{t(PLAYING_NORMAL)}</option>
                     <option value={PLAYING_TEACHING}>{t(PLAYING_TEACHING)}</option>
                   </select>
                 )}
                 {isAi && (
-                  <select value={setup.strategy} onChange={(e) => setPlayer(p, { strategy: e.target.value })} aria-label={t("aistrategy")}>
+                  <select
+                    value={setup.strategy}
+                    onChange={(e) => setPlayer(p, { strategy: e.target.value })}
+                    aria-label={t("aistrategy")}
+                  >
                     {AI_STRATEGIES_AVAILABLE.map((s) => (
                       <option key={s} value={s}>
                         {t(s)}
@@ -53,7 +71,9 @@ export function PlayersPanel() {
                 )}
               </div>
               <div className="player-meta">
-                <span className="player-name">{name && !name.includes("ㅤ") ? name : isAi ? t(setup.strategy) : t(PLAYER_HUMAN)}</span>
+                <span className="player-name">
+                  {name && !name.includes("ㅤ") ? name : isAi ? t(setup.strategy) : t(PLAYER_HUMAN)}
+                </span>
                 {rank && <span className="player-rank">{rank}</span>}
                 <span className="captures" title={t("player:captures")}>
                   ⊙ {p === "B" ? captures.W : captures.B}
@@ -114,7 +134,12 @@ export function InfoPanel() {
   const [tab, setTab] = useState<"info" | "details" | "notes">("info");
   const node = game?.currentNode;
   const [note, setNoteText] = useState(node?.note ?? "");
-  useEffect(() => setNoteText(node?.note ?? ""), [node]);
+  const [noteNode, setNoteNode] = useState(node);
+  if (noteNode !== node) {
+    // another move: edit its own note (set while rendering, not in an effect, so its first render shows it already)
+    setNoteNode(node);
+    setNoteText(node?.note ?? "");
+  }
   if (!game || !node) return null;
   const text = node.comment({ details: tab === "details" });
   return (

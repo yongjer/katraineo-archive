@@ -15,7 +15,9 @@ export default defineConfig({
     host: host || false,
     hmr: host ? { protocol: "ws", host, port: 1421 } : undefined,
     // KataGo binaries and models, and the Rust build
-    watch: { ignored: [resolve(import.meta.dirname, "src-tauri") + "/**", resolve(import.meta.dirname, "resources") + "/**"] },
+    watch: {
+      ignored: [resolve(import.meta.dirname, "src-tauri") + "/**", resolve(import.meta.dirname, "resources") + "/**"],
+    },
   },
   build: {
     target: "es2022",

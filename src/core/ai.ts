@@ -92,7 +92,8 @@ export function rankLabel(rank: number | null | undefined): string {
   return r >= 1 ? `${r}d` : `${1 - r}k`;
 }
 
-const fmtMoves = (moves: [number, Move][]) => moves.map(([p, mv]) => `${mv.gtp()} (${(100 * p).toFixed(2)}%)`).join(", ");
+const fmtMoves = (moves: [number, Move][]) =>
+  moves.map(([p, mv]) => `${mv.gtp()} (${(100 * p).toFixed(2)}%)`).join(", ");
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 type WeightedCoord = [number, number, number, number]; // policy, weight, x, y
@@ -122,7 +123,8 @@ abstract class AIStrategy {
     if (engine.queryGeneration !== this.generation) {
       throw new AnalysisDiscardedError("analysis discarded by a new game or an engine restart");
     }
-    if (engine.state === "dead" || engine.state === "stopped") throw new AnalysisDiscardedError("engine is not running");
+    if (engine.state === "dead" || engine.state === "stopped")
+      throw new AnalysisDiscardedError("engine is not running");
   }
 
   protected async waitForAnalysis() {
@@ -196,7 +198,10 @@ class HandicapStrategy extends AIStrategy {
       const bStonesAdvantage = Math.max(nHandicaps - 1, 0) - (this.cn.komi - MOVE_VALUE / 2) / MOVE_VALUE;
       pda = Math.min(3, Math.max(-3, -bStonesAdvantage * (3 / 8))); // max PDA at 8 stone adv
     }
-    const analysis = await this.requestAnalysis({ playoutDoublingAdvantage: pda, playoutDoublingAdvantagePla: "BLACK" });
+    const analysis = await this.requestAnalysis({
+      playoutDoublingAdvantage: pda,
+      playoutDoublingAdvantagePla: "BLACK",
+    });
     if (!analysis) return new DefaultStrategy(this.game, this.settings).generateMove();
     await this.waitForAnalysis();
     const cands = analysis.moveInfos;
@@ -218,11 +223,11 @@ class ScoreLossStrategy extends AIStrategy {
     const c = this.s("strength");
     const moves = cands.map(
       (d) =>
-        [d.pointsLost, Math.exp(Math.min(200, -c * Math.max(0, d.pointsLost))), Move.fromGtp(d.move, this.cn.nextPlayer)] as [
-          number,
-          number,
-          Move,
-        ],
+        [
+          d.pointsLost,
+          Math.exp(Math.min(200, -c * Math.max(0, d.pointsLost))),
+          Move.fromGtp(d.move, this.cn.nextPlayer),
+        ] as [number, number, Move],
     );
     const [pointsLost, weight, aimove] = weightedSelectionWithoutReplacement(moves, (m) => m[1], 1)[0];
     return [
@@ -282,9 +287,14 @@ class PickBasedStrategy extends AIStrategy {
     return 1;
   }
 
-  protected generateWeightedCoords(_legal: [number, Move][], policyGrid: number[][], size: [number, number]): [WeightedCoord[], string] {
+  protected generateWeightedCoords(
+    _legal: [number, Move][],
+    policyGrid: number[][],
+    size: [number, number],
+  ): [WeightedCoord[], string] {
     const coords: WeightedCoord[] = [];
-    for (let x = 0; x < size[0]; x++) for (let y = 0; y < size[1]; y++) if (policyGrid[y][x] > 0) coords.push([policyGrid[y][x], 1, x, y]);
+    for (let x = 0; x < size[0]; x++)
+      for (let y = 0; y < size[1]; y++) if (policyGrid[y][x] > 0) coords.push([policyGrid[y][x], 1, x, y]);
     return [coords, "Generated equal weights for all moves. "];
   }
 
@@ -392,13 +402,18 @@ class InfluenceTerritoryStrategy extends PickBasedStrategy {
     super(game, settings);
   }
 
-  protected generateWeightedCoords(_legal: [number, Move][], policyGrid: number[][], size: [number, number]): [WeightedCoord[], string] {
+  protected generateWeightedCoords(
+    _legal: [number, Move][],
+    policyGrid: number[][],
+    size: [number, number],
+  ): [WeightedCoord[], string] {
     const thrLine = this.s("threshold") - 1; // zero-based
     const lw = this.s("line_weight");
     const weight =
       this.mode === AI_INFLUENCE
         ? (x: number, y: number) =>
-            (1 / lw) ** (Math.max(0, thrLine - Math.min(size[0] - 1 - x, x)) + Math.max(0, thrLine - Math.min(size[1] - 1 - y, y)))
+            (1 / lw) **
+            (Math.max(0, thrLine - Math.min(size[0] - 1 - x, x)) + Math.max(0, thrLine - Math.min(size[1] - 1 - y, y)))
         : (x: number, y: number) => (1 / lw) ** Math.max(0, Math.min(size[0] - 1 - x, x, size[1] - 1 - y, y) - thrLine);
     const coords: WeightedCoord[] = [];
     for (let x = 0; x < size[0]; x++) {
@@ -406,7 +421,10 @@ class InfluenceTerritoryStrategy extends PickBasedStrategy {
         if (policyGrid[y][x] > 0) coords.push([policyGrid[y][x] * weight(x, y), weight(x, y), x, y]);
       }
     }
-    return [coords, `Generated weights for ${this.mode} according to weight factor ${lw} and distance from ${thrLine + 1}th line. `];
+    return [
+      coords,
+      `Generated weights for ${this.mode} according to weight factor ${lw} and distance from ${thrLine + 1}th line. `,
+    ];
   }
 }
 
@@ -426,7 +444,11 @@ class LocalTenukiStrategy extends PickBasedStrategy {
     return super.generateMove();
   }
 
-  protected generateWeightedCoords(_legal: [number, Move][], policyGrid: number[][], size: [number, number]): [WeightedCoord[], string] {
+  protected generateWeightedCoords(
+    _legal: [number, Move][],
+    policyGrid: number[][],
+    size: [number, number],
+  ): [WeightedCoord[], string] {
     const variance = this.s("stddev") ** 2;
     const [mx, my] = this.cn.move!.coords!;
     const coords: WeightedCoord[] = [];
@@ -437,10 +459,12 @@ class LocalTenukiStrategy extends PickBasedStrategy {
         coords.push([policyGrid[y][x], this.mode === AI_TENUKI ? 1 - g : g, x, y]);
       }
     }
-    return [coords, `Generated weights based on one minus gaussian with variance ${variance} around coordinates ${mx},${my}. `];
+    return [
+      coords,
+      `Generated weights based on one minus gaussian with variance ${variance} around coordinates ${mx},${my}. `,
+    ];
   }
 }
-
 
 class AntimirrorStrategy extends AIStrategy {
   async generateMove(): Promise<[Move, string]> {
@@ -549,7 +573,8 @@ class SimpleOwnershipStrategy extends AIStrategy {
     const top = Move.fromGtp(cands[0].move, this.cn.nextPlayer);
     if (top.isPass) return [top, "Top move is pass, so passing regardless of strategy."];
     const moves = this.movesWithSettledness();
-    if (!moves.length) throw new Error(t("No moves found - are you using an older KataGo with no per-move ownership info?"));
+    if (!moves.length)
+      throw new Error(t("No moves found - are you using an older KataGo with no per-move ownership info?"));
     const desc = moves
       .slice(0, 5)
       .map(
@@ -597,7 +622,8 @@ class HumanStyleStrategy extends AIStrategy {
       return [Move.pass(this.cn.nextPlayer), "No valid moves found."];
     }
     const human = result.humanPolicy;
-    if (!human) throw new Error(t("humanPolicy not found in analysis—have you downloaded and configured your human model yet?"));
+    if (!human)
+      throw new Error(t("humanPolicy not found in analysis—have you downloaded and configured your human model yet?"));
     const [sx, sy] = this.game.boardSize;
     const moves: [Move, number][] = [];
     for (let x = 0; x < sx; x++) {
@@ -606,7 +632,8 @@ class HumanStyleStrategy extends AIStrategy {
         if (p > 0) moves.push([new Move([x, y], this.cn.nextPlayer), p]);
       }
     }
-    if (human.length > sx * sy && human[human.length - 1] > 0) moves.push([Move.pass(this.cn.nextPlayer), human[human.length - 1]]);
+    if (human.length > sx * sy && human[human.length - 1] > 0)
+      moves.push([Move.pass(this.cn.nextPlayer), human[human.length - 1]]);
     const ranked = [...moves].sort((a, b) => b[1] - a[1]);
     const topStr = ranked
       .slice(0, 5)

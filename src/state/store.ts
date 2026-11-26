@@ -15,7 +15,14 @@ import {
   type UiMode,
 } from "../core/constants";
 import { KataGoEngine, type LogLevel } from "../core/engine";
-import { Game, IllegalMoveException, type ExtraAnalysisMode, type GameHost, type NewGameSettings, type StatusLevel } from "../core/game";
+import {
+  Game,
+  IllegalMoveException,
+  type ExtraAnalysisMode,
+  type GameHost,
+  type NewGameSettings,
+  type StatusLevel,
+} from "../core/game";
 import type { GameNode } from "../core/gameNode";
 import { t, tf } from "../core/i18n";
 import { Move, type Coords } from "../core/move";
@@ -36,7 +43,8 @@ export interface LogEntry {
   level: LogLevel;
 }
 
-export type DialogKind = null | "newgame" | "settings" | "ai" | "log" | "timer" | "tsumego" | "report" | "reanalyze" | "update";
+export type DialogKind =
+  null | "newgame" | "settings" | "ai" | "log" | "timer" | "tsumego" | "report" | "reanalyze" | "update";
 
 /** Updates of the app itself: `checking` and `latest` only follow a check from the menu. */
 export interface UpdateState {
@@ -200,7 +208,11 @@ function updateState() {
   }
   // teaching games: undo the human's move if it lost too many points
   const teaching =
-    mode === MODE_PLAY && !!cn.move && !!cn.parent && players[cn.player].type === PLAYER_HUMAN && players[cn.player].subtype === PLAYING_TEACHING;
+    mode === MODE_PLAY &&
+    !!cn.move &&
+    !!cn.parent &&
+    players[cn.player].type === PLAYER_HUMAN &&
+    players[cn.player].subtype === PLAYING_TEACHING;
   if (teaching && cn.analysisComplete && cn.parent!.analysisComplete && !cn.children.length && !game.endResult) {
     if (game.analyzeUndo(cn)) {
       refresh();
@@ -319,7 +331,9 @@ export async function restartEngine() {
   setStatus(t("restarting engine"), "info");
   await startEngine();
   const game = get().game;
-  if (game) for (const n of game.root.nodesInTree) if (!n.analysisComplete) game.analyze(n, { priority: PRIORITY_GAME_ANALYSIS });
+  if (game)
+    for (const n of game.root.nodesInTree)
+      if (!n.analysisComplete) game.analyze(n, { priority: PRIORITY_GAME_ANALYSIS });
   refresh();
 }
 
@@ -334,8 +348,10 @@ export function updateConfig(mutator: (c: AppConfig) => void, opts: { restartDea
   mutator(config);
   set({ config });
   persistConfig();
-  if (config.general.lang !== lang) void setLanguage(config.general.lang).then(() => set({ lang: config.general.lang }));
-  if (JSON.stringify(config.engine) !== before || (opts.restartDeadEngine && engine && !engine.isAlive)) void restartEngine();
+  if (config.general.lang !== lang)
+    void setLanguage(config.general.lang).then(() => set({ lang: config.general.lang }));
+  if (JSON.stringify(config.engine) !== before || (opts.restartDeadEngine && engine && !engine.isAlive))
+    void restartEngine();
   refresh();
 }
 
@@ -381,7 +397,11 @@ export function loadGameFromString(contents: string, filename: string, path: str
     const tree = parseGameFile(contents, filename);
     engine?.onNewGame();
     const cfg = get().config;
-    const game = new Game(host, engine, { moveTree: tree, sgfFilename: path, analyzeFast: cfg.general.load_fast_analysis });
+    const game = new Game(host, engine, {
+      moveTree: tree,
+      sgfFilename: path,
+      analyzeFast: cfg.general.load_fast_analysis,
+    });
     if (!cfg.general.load_sgf_rewind) game.redo(9999);
     // loaded games are reviewed by humans
     playerTypesBeforeLoad ??= { B: cfg.ui.players.B.type, W: cfg.ui.players.W.type };
@@ -477,7 +497,9 @@ export function undo(n: number | "smart" | "branch" | "main-branch" = 1) {
   if (n === "smart") {
     const cn = game.currentNode;
     times =
-      mode === MODE_PLAY && config.ui.players[cn.player].type === PLAYER_AI && config.ui.players[cn.nextPlayer].type === PLAYER_HUMAN
+      mode === MODE_PLAY &&
+      config.ui.players[cn.player].type === PLAYER_AI &&
+      config.ui.players[cn.nextPlayer].type === PLAYER_HUMAN
         ? 2
         : 1;
   }
@@ -642,7 +664,11 @@ export function openDialog(dialog: DialogKind) {
 const TIMER_INTERVAL = 0.07;
 const BEEP_START = 5.2;
 const periodsUsed: Record<Player, number> = { B: 0, W: 0 };
-let lastTimerUpdate: { node: GameNode | null; time: number; beeping: boolean } = { node: null, time: 0, beeping: false };
+let lastTimerUpdate: { node: GameNode | null; time: number; beeping: boolean } = {
+  node: null,
+  time: 0,
+  beeping: false,
+};
 
 export function resetTimer() {
   periodsUsed.B = periodsUsed.W = 0;
@@ -693,7 +719,8 @@ export function tickTimer() {
       usedPeriod = true;
     }
     const wasBeeping = beeping;
-    if (BEEP_START - 2 * TIMER_INTERVAL < remaining && remaining < BEEP_START && periodsUsed[player] < byoNum) beeping = true;
+    if (BEEP_START - 2 * TIMER_INTERVAL < remaining && remaining < BEEP_START && periodsUsed[player] < byoNum)
+      beeping = true;
     else if (remaining > BEEP_START) beeping = false;
     if (
       t.minimal_use &&
@@ -721,7 +748,12 @@ export function tickTimer() {
       ? { paused: timer.paused, remaining: mainRemaining, periods: null, ai }
       : { paused: timer.paused, remaining: Math.max(0, remaining), periods: Math.max(0, periodsLeft), ai };
   const cur = get().timer;
-  if (cur.paused !== next.paused || cur.periods !== next.periods || cur.ai !== next.ai || Math.floor(cur.remaining * 10) !== Math.floor(next.remaining * 10)) {
+  if (
+    cur.paused !== next.paused ||
+    cur.periods !== next.periods ||
+    cur.ai !== next.ai ||
+    Math.floor(cur.remaining * 10) !== Math.floor(next.remaining * 10)
+  ) {
     set({ timer: next });
   }
 }

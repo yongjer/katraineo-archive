@@ -88,7 +88,8 @@ export function mergeConfig<T>(defaults: T, saved: unknown): T {
     if (!(k in saved)) continue;
     const sv = saved[k];
     if (isObject(dv)) out[k] = isObject(sv) ? mergeConfig(dv, sv) : dv;
-    else if (k === "ai" || dv === null || typeof dv === typeof sv || (Array.isArray(dv) && Array.isArray(sv))) out[k] = sv;
+    else if (k === "ai" || dv === null || typeof dv === typeof sv || (Array.isArray(dv) && Array.isArray(sv)))
+      out[k] = sv;
   }
   // AI strategy sections are open-ended
   if ("ai" in out && isObject(saved.ai)) out.ai = { ...(out.ai as object), ...(saved.ai as object) };

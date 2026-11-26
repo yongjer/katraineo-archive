@@ -40,7 +40,10 @@ function setVersion(root, version) {
     ["package-lock.json", json((p) => void (p.version = p.packages[""].version = version))],
     ["src-tauri/tauri.conf.json", json((c) => void (c.bundle.windows.wix.version = msi))],
     ["src-tauri/Cargo.toml", (t) => replaceOnce(t, '^version = "([^"]+)"$', version, "Cargo.toml")],
-    ["src-tauri/Cargo.lock", (t) => replaceOnce(t, '^name = "katraineo"\\nversion = "([^"]+)"$', version, "Cargo.lock")],
+    [
+      "src-tauri/Cargo.lock",
+      (t) => replaceOnce(t, '^name = "katraineo"\\nversion = "([^"]+)"$', version, "Cargo.lock"),
+    ],
   ];
   // work out every file before writing any, so that an error leaves them all as they were
   const results = changes.map(([path, change]) => [join(root, path), change(readFileSync(join(root, path), "utf8"))]);

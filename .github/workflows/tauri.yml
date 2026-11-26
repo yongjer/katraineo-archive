@@ -191,7 +191,7 @@ jobs:
             src-tauri/target/release/bundle/**/*.AppImage
           if-no-files-found: ignore
 
-  # Installs what the build job made on Windows and Linux, starts it through tauri-driver (WebDriver) and uses it:
+  # Installs what the build job made on Windows and Linux, starts it and uses it through WebDriver:
   # KataGo, playing against the AI, pasting a game, dialogs, and finding an update (e2e/smoke.mjs). The runners have
   # no GPU, so the app uses KataGo's CPU build; the build job checks that the bundled KataGo starts.
   e2e:
@@ -206,6 +206,7 @@ jobs:
       KATAGO_EIGEN: https://github.com/lightvector/KataGo/releases/download/v1.18.1/katago-v1.18.1-eigenavx2
       E2E_OUT: ${{ github.workspace }}/e2e-output
       E2E_TLS_DIR: ${{ github.workspace }}/e2e-tls
+      E2E_WEBVIEW2_PORT: 9222 # Windows: see "Install the app" below
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -216,6 +217,7 @@ jobs:
           name: katraineo-tauri-${{ matrix.platform }}
           path: bundles
       - name: Install tauri-driver
+        if: runner.os == 'Linux' # on Windows the test uses msedgedriver itself
         run: cargo install tauri-driver --locked
       # A test CA and server certificate, for the test update served over https
       - name: Make a test certificate
@@ -277,6 +279,15 @@ jobs:
           Invoke-WebRequest "${env:KATAGO_EIGEN}-windows-x64.zip" -OutFile "$env:RUNNER_TEMP\katago.zip"
           Expand-Archive "$env:RUNNER_TEMP\katago.zip" "$env:RUNNER_TEMP\katago"
           certutil -addstore -f Root "$env:E2E_TLS_DIR\ca.pem"
+          # WebView2 133 and later no longer open the debugging port msedgedriver asks for when it starts the app
+          # (actions/runner-images#14738). So the test starts the app itself, and this policy has the app's WebView2
+          # open a port that msedgedriver attaches to. Both hives, as it is not documented which one wins.
+          foreach ($hive in 'HKLM', 'HKCU') {
+            $policy = "${hive}:\SOFTWARE\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+            New-Item -Path $policy -Force | Out-Null
+            New-ItemProperty -Path $policy -Name (Split-Path $app -Leaf) -PropertyType String -Force `
+              -Value "--remote-debugging-port=$env:E2E_WEBVIEW2_PORT" | Out-Null
+          }
           "KATRAINEO_APP=$app" >> $env:GITHUB_ENV
           "KATAGO=$env:RUNNER_TEMP\katago\katago.exe" >> $env:GITHUB_ENV
           "NATIVE_DRIVER=$driver" >> $env:GITHUB_ENV

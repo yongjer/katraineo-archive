@@ -56,6 +56,14 @@ export class Session {
     return new Session(url, value.sessionId);
   }
 
+  /** Attach msedgedriver at `url` to a running WebView2 app with its debugging port at `debuggerAddress` (host:port). */
+  static async attach(url, debuggerAddress) {
+    const value = await call(url, "POST", "/session", {
+      capabilities: { alwaysMatch: { browserName: "webview2", "ms:edgeChromium": true, "ms:edgeOptions": { debuggerAddress } } },
+    });
+    return new Session(url, value.sessionId);
+  }
+
   constructor(url, id) {
     this.base = url;
     this.path = `/session/${id}`;

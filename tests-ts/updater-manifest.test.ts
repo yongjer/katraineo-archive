@@ -59,7 +59,9 @@ describe("the updater manifest", () => {
   });
 
   it("refuses signatures for another version, or none", () => {
-    expect(() => buildManifest({ ...release, files: files("2.0.0-alpha.1") })).toThrow(/signed for version 2.0.0-alpha.1/);
+    expect(() => buildManifest({ ...release, files: files("2.0.0-alpha.1") })).toThrow(
+      /signed for version 2.0.0-alpha.1/,
+    );
     expect(() => buildManifest({ ...release, files: files(null) })).toThrow(/\(none\)/);
   });
 

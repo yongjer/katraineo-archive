@@ -45,15 +45,29 @@ function findInPath(name) {
 }
 
 function command(settings) {
-  if (settings.altcommand?.trim()) throw new Error("The engine bridge does not run custom commands; clear 'Override Engine Command'.");
+  if (settings.altcommand?.trim())
+    throw new Error("The engine bridge does not run custom commands; clear 'Override Engine Command'.");
   let exe = settings.katago?.trim();
   if (!exe) {
-    exe = process.platform === "win32" ? "katrain/KataGo/katago.exe" : process.platform === "linux" ? "katrain/KataGo/katago" : findInPath("katago");
+    exe =
+      process.platform === "win32"
+        ? "katrain/KataGo/katago.exe"
+        : process.platform === "linux"
+          ? "katrain/KataGo/katago"
+          : findInPath("katago");
   }
   exe = resolvePath(exe);
   mkdirSync(dataDir, { recursive: true });
   const overrides = [`homeDataDir=${dataDir}`, process.env.KATAGO_OVERRIDES].filter(Boolean).join(",");
-  const args = ["analysis", "-model", resolvePath(settings.model), "-config", resolvePath(settings.config), "-override-config", overrides];
+  const args = [
+    "analysis",
+    "-model",
+    resolvePath(settings.model),
+    "-config",
+    resolvePath(settings.config),
+    "-override-config",
+    overrides,
+  ];
   if (settings.humanlike_model?.trim()) args.splice(3, 0, "-human-model", resolvePath(settings.humanlike_model.trim()));
   return { cmd: exe, args };
 }
@@ -130,7 +144,11 @@ createServer(async (req, res) => {
       return res.end("ok");
     }
     if (url.pathname === "/events") {
-      res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", Connection: "keep-alive" });
+      res.writeHead(200, {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
       res.write(": connected\n\n");
       const client = { res, generation: Number(url.searchParams.get("generation") || generation) };
       clients.add(client);
@@ -144,7 +162,9 @@ createServer(async (req, res) => {
     res.end(String(e));
   }
 }).listen(port, "127.0.0.1", () =>
-  console.log(`[bridge] open ${allowedOrigin}/?bridge=${encodeURIComponent(`http://127.0.0.1:${port}?token=${token}`)}`),
+  console.log(
+    `[bridge] open ${allowedOrigin}/?bridge=${encodeURIComponent(`http://127.0.0.1:${port}?token=${token}`)}`,
+  ),
 );
 
 process.on("SIGINT", () => {

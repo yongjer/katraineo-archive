@@ -78,16 +78,31 @@ export function TopBar() {
         )}
       </div>
       <div className="mode-tabs" role="tablist">
-        <button role="tab" aria-selected={mode === MODE_PLAY} className={mode === MODE_PLAY ? "active" : ""} onClick={() => setMode(MODE_PLAY)}>
+        <button
+          role="tab"
+          aria-selected={mode === MODE_PLAY}
+          className={mode === MODE_PLAY ? "active" : ""}
+          onClick={() => setMode(MODE_PLAY)}
+        >
           {t("btn:Play")}
         </button>
-        <button role="tab" aria-selected={mode === MODE_ANALYZE} className={mode === MODE_ANALYZE ? "active" : ""} onClick={() => setMode(MODE_ANALYZE)}>
+        <button
+          role="tab"
+          aria-selected={mode === MODE_ANALYZE}
+          className={mode === MODE_ANALYZE ? "active" : ""}
+          onClick={() => setMode(MODE_ANALYZE)}
+        >
           {t("btn:Analysis")}
         </button>
       </div>
       <div className="toggles">
         {TOGGLES.map(([key, label, shortcut]) => (
-          <button key={key} className={`toggle ${toggles[key] ? "on" : ""}`} onClick={() => toggleControl(key)} title={`${oneLine(t(label))} (${shortcut})`}>
+          <button
+            key={key}
+            className={`toggle ${toggles[key] ? "on" : ""}`}
+            onClick={() => toggleControl(key)}
+            title={`${oneLine(t(label))} (${shortcut})`}
+          >
             <span className="check">{toggles[key] ? "●" : "○"}</span>
             {oneLine(t(label))}
             <kbd>{shortcut}</kbd>
@@ -129,15 +144,28 @@ function checkUpdatesFromMenu() {
 /** Shown in the top bar once a newer version has been found. */
 function UpdateNotice() {
   const update = useStore((s) => s.update);
-  if (!update.info || (update.phase !== "available" && update.phase !== "installing" && update.phase !== "error")) return null;
+  if (!update.info || (update.phase !== "available" && update.phase !== "installing" && update.phase !== "error"))
+    return null;
   return (
-    <button className="update-notice" title={tf("update:available", { version: update.info.version })} onClick={() => openDialog("update")}>
+    <button
+      className="update-notice"
+      title={tf("update:available", { version: update.info.version })}
+      onClick={() => openDialog("update")}
+    >
       {t("update:notice")}
     </button>
   );
 }
 
-function Dropdown({ children, onClose, align = "left" }: { children: React.ReactNode; onClose: () => void; align?: "left" | "right" }) {
+function Dropdown({
+  children,
+  onClose,
+  align = "left",
+}: {
+  children: React.ReactNode;
+  onClose: () => void;
+  align?: "left" | "right";
+}) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -182,12 +210,18 @@ export function ControlsBar() {
     engineTitle = t("engine:pondering");
   } else if (engine.state === "starting" || remaining > 0) {
     engineColor = THEME.engine.busy;
-    engineTitle = engine.state === "starting" ? t("engine:starting") : t("engine:queries").replace("{count}", String(remaining));
+    engineTitle =
+      engine.state === "starting" ? t("engine:starting") : t("engine:queries").replace("{count}", String(remaining));
   }
   return (
     <footer className="controls">
       <div className="nav">
-        <NavButton label="⇤✗" title={`${t("nav:previous-mistake")} (Shift+N)`} onClick={() => findMistake("undo")} mistake />
+        <NavButton
+          label="⇤✗"
+          title={`${t("nav:previous-mistake")} (Shift+N)`}
+          onClick={() => findMistake("undo")}
+          mistake
+        />
         <NavButton label="⏮" title={`${t("nav:start")} (Home)`} onClick={() => undo(9999)} />
         <NavButton label="⏪" title={`${t("nav:back-10")} (Shift+Left)`} onClick={() => undo(10)} />
         <NavButton label="◀" title={`${t("nav:previous")} (Left / Z)`} onClick={() => undo(1)} />
@@ -221,7 +255,17 @@ export function ControlsBar() {
   );
 }
 
-function NavButton({ label, title, onClick, mistake = false }: { label: string; title: string; onClick: () => void; mistake?: boolean }) {
+function NavButton({
+  label,
+  title,
+  onClick,
+  mistake = false,
+}: {
+  label: string;
+  title: string;
+  onClick: () => void;
+  mistake?: boolean;
+}) {
   return (
     <button className={`nav-button ${mistake ? "mistake" : ""}`} title={title} aria-label={title} onClick={onClick}>
       {label}

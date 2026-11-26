@@ -95,8 +95,14 @@ class TauriTransport implements EngineTransport {
           this.generation = g;
           return true;
         };
-        await listen<Line>("katago-stdout", (e) => current(e.payload.generation) && this.handlers?.onStdout(e.payload.line));
-        await listen<Line>("katago-stderr", (e) => current(e.payload.generation) && this.handlers?.onStderr(e.payload.line));
+        await listen<Line>(
+          "katago-stdout",
+          (e) => current(e.payload.generation) && this.handlers?.onStdout(e.payload.line),
+        );
+        await listen<Line>(
+          "katago-stderr",
+          (e) => current(e.payload.generation) && this.handlers?.onStderr(e.payload.line),
+        );
         await listen<{ generation: number; code: number | null }>(
           "katago-exit",
           (e) => e.payload.generation === this.generation && this.handlers?.onExit(e.payload.code),
@@ -109,7 +115,9 @@ class TauriTransport implements EngineTransport {
   async start(settings: EngineSettings) {
     await this.listen();
     const { invoke } = await import("@tauri-apps/api/core");
-    const result = await invoke<{ generation: number; command: string[]; remote: boolean }>("engine_start", { settings });
+    const result = await invoke<{ generation: number; command: string[]; remote: boolean }>("engine_start", {
+      settings,
+    });
     this.generation = Math.max(this.generation, result.generation);
     if (result.remote) {
       this.handlers?.onStderr(`Connected to remote KataGo at ${result.command.join(" ")}`);
@@ -216,7 +224,9 @@ const tauriPlatform: Platform = {
   },
   async checkForUpdate() {
     const { invoke } = await import("@tauri-apps/api/core");
-    const info = await invoke<{ version: string; current_version: string; notes: string | null } | null>("update_check");
+    const info = await invoke<{ version: string; current_version: string; notes: string | null } | null>(
+      "update_check",
+    );
     return info && { version: info.version, currentVersion: info.current_version, notes: info.notes };
   },
   async installUpdate(onProgress) {
@@ -258,7 +268,10 @@ class HttpBridgeTransport implements EngineTransport {
   }
 
   async start(settings: EngineSettings) {
-    if (!this.base) throw new Error("No KataGo available in the browser. Run the desktop app, or start scripts/engine-bridge.mjs and open the URL it prints");
+    if (!this.base)
+      throw new Error(
+        "No KataGo available in the browser. Run the desktop app, or start scripts/engine-bridge.mjs and open the URL it prints",
+      );
     this.source?.close();
     const res = await fetch(this.url("/start"), { method: "POST", body: JSON.stringify(settings) });
     if (!res.ok) throw new Error(await res.text());

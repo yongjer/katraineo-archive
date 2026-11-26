@@ -45,7 +45,10 @@ export function buildManifest({ version, notes, pubDate, baseUrl, files }) {
     if (bound !== version) throw new Error(`${name} is signed for version ${bound ?? "(none)"}, not ${version}`);
     for (const key of keys) {
       if (platforms[key]) throw new Error(`${key} is served by both ${platforms[key].url} and ${name}`);
-      platforms[key] = { signature: signature.trim(), url: `${baseUrl.replace(/\/$/, "")}/${encodeURIComponent(name)}` };
+      platforms[key] = {
+        signature: signature.trim(),
+        url: `${baseUrl.replace(/\/$/, "")}/${encodeURIComponent(name)}`,
+      };
     }
   }
   const missing = REQUIRED_PLATFORMS.filter((p) => !platforms[p]);

@@ -31,9 +31,20 @@ class NodeTransport implements EngineTransport {
   async start(s: EngineSettings) {
     mkdirSync(dataDir, { recursive: true });
     const exe = process.env.KATAGO_EXE || resourcePath("katrain/KataGo/katago");
-    const overrides = [`homeDataDir=${dataDir}`, "numAnalysisThreads=2", "numSearchThreads=2", "nnMaxBatchSize=8"].join(",");
+    const overrides = [`homeDataDir=${dataDir}`, "numAnalysisThreads=2", "numSearchThreads=2", "nnMaxBatchSize=8"].join(
+      ",",
+    );
     const human = process.env.KATAGO_HUMAN_MODEL ? ["-human-model", process.env.KATAGO_HUMAN_MODEL] : [];
-    this.proc = spawn(exe, ["analysis", "-model", resourcePath(s.model), ...human, "-config", resourcePath(s.config), "-override-config", overrides]);
+    this.proc = spawn(exe, [
+      "analysis",
+      "-model",
+      resourcePath(s.model),
+      ...human,
+      "-config",
+      resourcePath(s.config),
+      "-override-config",
+      overrides,
+    ]);
     createInterface({ input: this.proc.stdout }).on("line", (l) => this.handlers.onStdout(l));
     createInterface({ input: this.proc.stderr }).on("line", (l) => {
       this.stderr.push(l);
@@ -102,15 +113,19 @@ describe.skipIf(!enabled)("KataGo end-to-end", () => {
   for (const strategy of AI_STRATEGIES_AVAILABLE) {
     // the human-like AIs need KataGo started with -human-model (KATAGO_HUMAN_MODEL)
     const needsHuman = AI_STRATEGIES_HUMAN_MODEL.includes(strategy) && !process.env.KATAGO_HUMAN_MODEL;
-    it.skipIf(needsHuman)(`plays a legal move with ${strategy}`, async () => {
-      const cn = game.currentNode;
-      const ai = (defaultConfig.ai as Record<string, Record<string, number | boolean>>)[strategy] ?? {};
-      const played = await generateAiMove(game, strategy, ai);
-      expect(played).not.toBeNull();
-      expect(played!.parent).toBe(cn);
-      expect(played!.aiThoughts.length).toBeGreaterThan(0);
-      await until(() => played!.analysisComplete);
-    }, 120_000);
+    it.skipIf(needsHuman)(
+      `plays a legal move with ${strategy}`,
+      async () => {
+        const cn = game.currentNode;
+        const ai = (defaultConfig.ai as Record<string, Record<string, number | boolean>>)[strategy] ?? {};
+        const played = await generateAiMove(game, strategy, ai);
+        expect(played).not.toBeNull();
+        expect(played!.parent).toBe(cn);
+        expect(played!.aiThoughts.length).toBeGreaterThan(0);
+        await until(() => played!.analysisComplete);
+      },
+      120_000,
+    );
   }
 
   it("runs deeper analysis and finds alternatives", async () => {
@@ -126,17 +141,21 @@ describe.skipIf(!enabled)("KataGo end-to-end", () => {
   }, 1_000_000);
 
   // Equalize and sweep send one query per candidate / legal point; slow on CPU-only machines.
-  it.skipIf(process.env.KATAGO_E2E_FULL !== "1")("equalizes and sweeps", async () => {
-    const cn = game.currentNode;
-    game.analyzeExtra("equalize");
-    await until(() => engine.isIdle(), 1_800_000);
-    const visits = Object.values(cn.analysis.moves).map((d) => d.visits);
-    expect(Math.min(...visits)).toBeGreaterThanOrEqual(0.8 * Math.max(...visits));
-    game.analyzeExtra("sweep");
-    await until(() => engine.isIdle(), 1_800_000);
-    const legal = cn.policy!.slice(0, 81).filter((p) => p >= 0).length;
-    expect(Object.keys(cn.analysis.moves).length).toBeGreaterThanOrEqual(legal);
-  }, 3_700_000);
+  it.skipIf(process.env.KATAGO_E2E_FULL !== "1")(
+    "equalizes and sweeps",
+    async () => {
+      const cn = game.currentNode;
+      game.analyzeExtra("equalize");
+      await until(() => engine.isIdle(), 1_800_000);
+      const visits = Object.values(cn.analysis.moves).map((d) => d.visits);
+      expect(Math.min(...visits)).toBeGreaterThanOrEqual(0.8 * Math.max(...visits));
+      game.analyzeExtra("sweep");
+      await until(() => engine.isIdle(), 1_800_000);
+      const legal = cn.policy!.slice(0, 81).filter((p) => p >= 0).length;
+      expect(Object.keys(cn.analysis.moves).length).toBeGreaterThanOrEqual(legal);
+    },
+    3_700_000,
+  );
 
   it("ponders and stops", async () => {
     const cn = game.currentNode;
@@ -149,7 +168,12 @@ describe.skipIf(!enabled)("KataGo end-to-end", () => {
   }, 130_000);
 
   it("saves analysis to SGF and restores it without the engine", () => {
-    const sgf = writeSgf(game.root, { ...TRAINER, saveAnalysis: true, evalThresholds: TRAINER.eval_thresholds, saveCommentsClass: TRAINER.save_feedback });
+    const sgf = writeSgf(game.root, {
+      ...TRAINER,
+      saveAnalysis: true,
+      evalThresholds: TRAINER.eval_thresholds,
+      saveCommentsClass: TRAINER.save_feedback,
+    });
     const reloaded = new Game(host, null, { moveTree: parseSgf(sgf) });
     const nodes = reloaded.root.nodesInTree;
     expect(nodes.length).toBe(game.root.nodesInTree.length);

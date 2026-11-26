@@ -10,7 +10,14 @@ interface Golden {
   current_index: number;
   thresholds: number[];
   analyses: { index: number; json: KataGoResponse; partial: boolean }[];
-  reports: Record<string, { sum_stats: Record<string, Record<string, number>>; histogram: Record<string, number>[]; ptloss: Record<string, number[]> }>;
+  reports: Record<
+    string,
+    {
+      sum_stats: Record<string, Record<string, number>>;
+      histogram: Record<string, number>[];
+      ptloss: Record<string, number[]>;
+    }
+  >;
 }
 
 describe("performance report matches katrain/core/ai.py game_report", () => {

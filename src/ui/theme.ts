@@ -37,7 +37,12 @@ export const THEME = {
   engine: { dead: "#cc0000", busy: "#e6661a", ready: "#1e9600", pondering: "#cccc1a" },
 };
 
-export function evalColor(pointsLost: number, thresholds: number[], theme: string, showClass?: boolean[]): string | null {
+export function evalColor(
+  pointsLost: number,
+  thresholds: number[],
+  theme: string,
+  showClass?: boolean[],
+): string | null {
   const i = evaluationClass(pointsLost, thresholds);
   if (showClass && !showClass[i]) return null;
   return (EVAL_COLORS[theme] ?? EVAL_COLORS["theme:normal"])[i];

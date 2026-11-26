@@ -12,7 +12,8 @@ import { packFloats, unpackFloats, varToGrid } from "../src/core/utils";
 const root = join(__dirname, "..");
 const golden = (name: string) => JSON.parse(readFileSync(join(__dirname, "golden", name), "utf-8"));
 
-const newBoard = (props: Record<string, unknown> = { SZ: 19 }) => new Game(host, null, { moveTree: new GameNode(null, props) });
+const newBoard = (props: Record<string, unknown> = { SZ: 19 }) =>
+  new Game(host, null, { moveTree: new GameNode(null, props) });
 const play = (g: Game, gtp: string, player: "B" | "W", ignoreKo = false) =>
   g.play(Move.fromGtp(gtp, player), { ignoreKo });
 const chains = (g: Game) => g.chains.filter((c) => c.length);
@@ -80,11 +81,19 @@ describe("parsing matches pysgf on tests-ts/data", () => {
         const exp = expected.nodes[i];
         // generated handicap stones come from a Python set, so their order is arbitrary
         const sortAB = (k: string, v: string[]) => (k === "AB" ? [...v].sort() : v);
-        const props = Object.fromEntries([...n.properties].filter(([k]) => k !== "C").map(([k, v]) => [k, sortAB(k, v)]));
+        const props = Object.fromEntries(
+          [...n.properties].filter(([k]) => k !== "C").map(([k, v]) => [k, sortAB(k, v)]),
+        );
         const expProps = Object.fromEntries(
           Object.entries(exp.props as Record<string, unknown[]>)
             .filter(([k]) => k !== "C")
-            .map(([k, v]) => [k, sortAB(k, v.map((x) => (typeof x === "number" && Number.isInteger(x) && k === "KM" ? x.toFixed(1) : String(x))))]),
+            .map(([k, v]) => [
+              k,
+              sortAB(
+                k,
+                v.map((x) => (typeof x === "number" && Number.isInteger(x) && k === "KM" ? x.toFixed(1) : String(x))),
+              ),
+            ]),
         );
         expect(props).toEqual(expProps);
         expect(n.moves.map((m) => m.player + m.gtp())).toEqual(exp.moves);
@@ -228,7 +237,8 @@ describe("board rules (ported from tests/test_board.py)", () => {
   });
 
   it("treats games saved by this app or the original KaTrain as its own", () => {
-    const external = (ap: string) => new Game(host, null, { moveTree: parseSgf(`(;GM[1]SZ[19]AP[${ap}])`) }).externalGame;
+    const external = (ap: string) =>
+      new Game(host, null, { moveTree: parseSgf(`(;GM[1]SZ[19]AP[${ap}])`) }).externalGame;
     expect(external("KaTrain:1.20.0")).toBe(false);
     expect(external("Katraineo:2.0.0")).toBe(false);
     expect(external("CGoban:3")).toBe(true);
@@ -285,7 +295,14 @@ describe("board rules (ported from tests/test_board.py)", () => {
 describe("analysis bookkeeping", () => {
   const response = (moves: [string, number, number, number][], root: [number, number, number]): KataGoResponse => ({
     id: "QUERY:1",
-    moveInfos: moves.map(([move, visits, winrate, scoreLead], order) => ({ move, order, visits, winrate, scoreLead, pv: [move] })),
+    moveInfos: moves.map(([move, visits, winrate, scoreLead], order) => ({
+      move,
+      order,
+      visits,
+      winrate,
+      scoreLead,
+      pv: [move],
+    })),
     rootInfo: { visits: root[0], winrate: root[1], scoreLead: root[2] },
     policy: new Array(82).fill(0.01),
     ownership: new Array(81).fill(0),
@@ -294,7 +311,15 @@ describe("analysis bookkeeping", () => {
   it("computes candidate moves and points lost like KaTrain", () => {
     const b = newBoard({ SZ: 9 });
     const root = b.root;
-    root.setAnalysis(response([["E5", 100, 0.6, 3], ["D4", 50, 0.55, 1.5]], [150, 0.58, 2.5]));
+    root.setAnalysis(
+      response(
+        [
+          ["E5", 100, 0.6, 3],
+          ["D4", 50, 0.55, 1.5],
+        ],
+        [150, 0.58, 2.5],
+      ),
+    );
     const cands = root.candidateMoves;
     expect(cands.map((c) => c.move)).toEqual(["E5", "D4"]);
     expect(cands[0].pointsLost).toBeCloseTo(-0.5);
@@ -329,7 +354,9 @@ describe("analysis bookkeeping", () => {
 
 describe("i18n", () => {
   it("formats Python format specs", () => {
-    expect(pyFormat("Move was #{rank} ({probability:.2%}).", { rank: 3, probability: 0.1234 })).toBe("Move was #3 (12.34%).");
+    expect(pyFormat("Move was #{rank} ({probability:.2%}).", { rank: 3, probability: 0.1234 })).toBe(
+      "Move was #3 (12.34%).",
+    );
     expect(pyFormat("loss {points_lost:.1f}", { points_lost: 2.345 })).toBe("loss 2.3");
   });
   it("parses KaTrain's .po catalogs", () => {
@@ -347,7 +374,8 @@ describe("i18n", () => {
     const used = new Set<string>();
     for (const file of sources(join(root, "src"))) {
       // t("...") and tf("...", ...), and the reasons of illegal moves (the status bar shows t(e.message))
-      for (const m of readFileSync(file, "utf-8").matchAll(/\b(?:tf?|IllegalMoveException)\(\s*"([^"]+)"/g)) used.add(m[1]);
+      for (const m of readFileSync(file, "utf-8").matchAll(/\b(?:tf?|IllegalMoveException)\(\s*"([^"]+)"/g))
+        used.add(m[1]);
     }
     expect(used.size).toBeGreaterThan(150);
     expect([...used].filter((id) => !(id in en))).toEqual([]);

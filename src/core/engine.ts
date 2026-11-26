@@ -209,7 +209,8 @@ export class KataGoEngine {
     this.setState("starting");
     const url = (this.settings.remote_url ?? "").trim();
     if (this.isRemote && !url) return this.startFailed(tf("Remote KataGo URL is empty", {}));
-    if (this.isRemote && !/^wss?:\/\//.test(url)) return this.startFailed(tf("Remote KataGo URL must start with ws:// or wss://", {}));
+    if (this.isRemote && !/^wss?:\/\//.test(url))
+      return this.startFailed(tf("Remote KataGo URL must start with ws:// or wss://", {}));
     if (this.isRemote) this.log(`Connecting to remote KataGo at ${url}`, "debug");
     try {
       const result = await this.transport.start(this.settings);
@@ -217,7 +218,11 @@ export class KataGoEngine {
       if (run === this.startCount && this.state === "starting" && result?.ready) this.setState("ready");
     } catch (e) {
       if (run !== this.startCount) return;
-      this.startFailed(this.isRemote ? tf("Connecting to remote KataGo failed", { url, error: e }) : tf("Starting KataGo failed", { error: e }));
+      this.startFailed(
+        this.isRemote
+          ? tf("Connecting to remote KataGo failed", { url, error: e })
+          : tf("Starting KataGo failed", { error: e }),
+      );
     }
   }
 
@@ -378,7 +383,10 @@ export class KataGoEngine {
       avoid = (["B", "W"] as Player[]).map((player) => ({ moves: outside, player, untilDepth: 1 }));
     }
 
-    const settings: Record<string, unknown> = { ...this.overrideSettings, wideRootNoise: this.settings.wide_root_noise };
+    const settings: Record<string, unknown> = {
+      ...this.overrideSettings,
+      wideRootNoise: this.settings.wide_root_noise,
+    };
     if (req.timeLimit ?? true) settings.maxTime = this.settings.max_time;
 
     const query: Query = {
@@ -429,7 +437,10 @@ export class KataGoEngine {
       return;
     }
     this.lastError =
-      this.lastError ?? (this.isRemote ? tf("Remote KataGo engine disconnected", { error: this.disconnectReason }) : tf("Engine exited unexpectedly", { code }));
+      this.lastError ??
+      (this.isRemote
+        ? tf("Remote KataGo engine disconnected", { error: this.disconnectReason })
+        : tf("Engine exited unexpectedly", { code }));
     this.log(this.lastError, "error");
     this.queries.clear();
     this.sentPayloads.clear();
@@ -449,7 +460,10 @@ export class KataGoEngine {
     while (this.reconnectAttempts < n) {
       const attempt = ++this.reconnectAttempts;
       const delay = Math.min(KataGoEngine.RECONNECT_BACKOFF_MS * attempt, KataGoEngine.RECONNECT_MAX_BACKOFF_MS);
-      this.log(`Remote KataGo disconnected (${error}); reconnect attempt ${attempt}/${n} in ${Math.round(delay / 1000)}s`, "info");
+      this.log(
+        `Remote KataGo disconnected (${error}); reconnect attempt ${attempt}/${n} in ${Math.round(delay / 1000)}s`,
+        "info",
+      );
       this.reconnectMessage = tf("Reconnecting to remote KataGo", { attempt, total: n });
       this.onStatus(this.reconnectMessage);
       this.notify();

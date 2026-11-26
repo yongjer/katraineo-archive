@@ -30,8 +30,16 @@ export interface TsumegoResult {
 }
 
 /** bwBoard[i][j] is "B", "W" or "-" (i = row from the top). */
-export function tsumegoFrame(bwBoard: string[][], komi: number, blackToPlay: boolean, ko: boolean, margin: number): TsumegoResult {
-  const stones: Stones = bwBoard.map((row) => row.map((s) => (s === "B" || s === "W" ? { stone: true, black: s === "B" } : {})));
+export function tsumegoFrame(
+  bwBoard: string[][],
+  komi: number,
+  blackToPlay: boolean,
+  ko: boolean,
+  margin: number,
+): TsumegoResult {
+  const stones: Stones = bwBoard.map((row) =>
+    row.map((s) => (s === "B" || s === "W" ? { stone: true, black: s === "B" } : {})),
+  );
   const filled = frameStones(stones, komi, blackToPlay, ko, margin);
   const pick = (key: "frame" | "regionMark") =>
     filled.flatMap((row, i) => row.map((s, j) => [i, j, s] as const)).filter(([, , s]) => s?.[key]);
@@ -58,7 +66,8 @@ function frameStones(stones: Stones, komi: number, blackToPlay: boolean, ko: boo
   const [isize, jsize] = sizes;
   const ijs = stones.flatMap((row, i) => row.flatMap((h, j) => (h.stone ? [{ i, j, black: !!h.black }] : [])));
   if (!ijs.length) return [];
-  const minBy = (key: "i" | "j", sign: number) => ijs.reduce((best, z) => (sign * z[key] < sign * best[key] ? z : best));
+  const minBy = (key: "i" | "j", sign: number) =>
+    ijs.reduce((best, z) => (sign * z[key] < sign * best[key] ? z : best));
   const top = minBy("i", 1);
   const left = minBy("j", 1);
   const bottom = minBy("i", -1);
@@ -68,14 +77,19 @@ function frameStones(stones: Stones, komi: number, blackToPlay: boolean, ko: boo
   const imax = snap(bottom.i, isize - 1);
   const jmax = snap(right.j, jsize - 1);
   // flip/rotate into the standard position (don't mix flip and swap)
-  const flipSpec: FlipSpec = imin < jmin ? [false, false, true] : [needFlip(imin, imax, isize), needFlip(jmin, jmax, jsize), false];
+  const flipSpec: FlipSpec =
+    imin < jmin ? [false, false, true] : [needFlip(imin, imax, isize), needFlip(jmin, jmax, jsize), false];
   if (flipSpec.includes(true)) {
     const flipped = flipStones(stones, flipSpec);
     const filled = frameStones(flipped, komi, blackToPlay, ko, margin);
     return flipStones(filled, flipSpec);
   }
   const range: Range = [imin - margin, imax + margin, jmin - margin, jmax + margin];
-  const blackToAttack = [top, bottom, left, right].reduce((acc, z) => acc + (z.black ? 1 : -1) * (height(z.i, isize) + height(z.j, jsize)), 0) > 0;
+  const blackToAttack =
+    [top, bottom, left, right].reduce(
+      (acc, z) => acc + (z.black ? 1 : -1) * (height(z.i, isize) + height(z.j, jsize)),
+      0,
+    ) > 0;
   putBorder(stones, sizes, range, blackToAttack);
   putOutside(stones, sizes, range, blackToAttack, komi);
   putKoThreat(stones, sizes, range, blackToAttack, blackToPlay, ko);
@@ -87,7 +101,15 @@ const needFlip = (kmin: number, kmax: number, size: number) => kmin < size - kma
 const height = (k: number, size: number) => size - Math.abs(k - (size - 1) / 2);
 const inside = (i: number, j: number, [i0, i1, j0, j1]: Range) => i0 <= i && i <= i1 && j0 <= j && j <= j1;
 
-function putStone(stones: Stones, [isize, jsize]: [number, number], i: number, j: number, black: boolean, empty: boolean, regionMark = false) {
+function putStone(
+  stones: Stones,
+  [isize, jsize]: [number, number],
+  i: number,
+  j: number,
+  black: boolean,
+  empty: boolean,
+  regionMark = false,
+) {
   if (i < 0 || isize <= i || j < 0 || jsize <= j) return;
   stones[i][j] = empty ? {} : { stone: true, frame: true, black, regionMark };
 }
@@ -117,7 +139,14 @@ function putOutside(stones: Stones, sizes: [number, number], range: Range, black
 const OFFENSE_KO_THREAT: [string[], boolean, boolean] = [["....OOOX.", ".....XXXX"], true, false];
 const DEFENSE_KO_THREAT: [string[], boolean, boolean] = [["..", "..", "X.", "XO", "OO", ".O"], false, true];
 
-function putKoThreat(stones: Stones, sizes: [number, number], range: Range, blackToAttack: boolean, blackToPlay: boolean, ko: boolean) {
+function putKoThreat(
+  stones: Stones,
+  sizes: [number, number],
+  range: Range,
+  blackToAttack: boolean,
+  blackToPlay: boolean,
+  ko: boolean,
+) {
   const [isize, jsize] = sizes;
   const forOffense = xor(ko, xor(blackToAttack, blackToPlay));
   const [pattern, topP, leftP] = forOffense ? OFFENSE_KO_THREAT : DEFENSE_KO_THREAT;
@@ -154,7 +183,11 @@ function flipStones(stones: Stones, [flipI, flipJ, swap]: FlipSpec): Stones {
  * returning the node and the region of interest [xmin, xmax, ymin, ymax].
  * Like the Python version, rows are KaTrain's y (0 at the bottom); the frame is symmetric under flips.
  */
-export function addTsumegoFrame(game: Game, ko: boolean, margin: number): [GameNode, [number, number, number, number] | null] {
+export function addTsumegoFrame(
+  game: Game,
+  ko: boolean,
+  margin: number,
+): [GameNode, [number, number, number, number] | null] {
   const [sx, sy] = game.boardSize;
   const bw = game.stoneGrid.map((row) => row.map((p) => p ?? "-"));
   const blackToPlay = game.currentNode.nextPlayer === "B";
@@ -164,6 +197,8 @@ export function addTsumegoFrame(game: Game, ko: boolean, margin: number): [GameN
   if (blacks.length) props.AB = toSgf(blacks);
   if (whites.length) props.AW = toSgf(whites);
   const node = new GameNode(game.currentNode, props); // the side to move stays the same (no B/W in this node)
-  const roi: [number, number, number, number] | null = region ? [region[1][0], region[1][1], region[0][0], region[0][1]] : null;
+  const roi: [number, number, number, number] | null = region
+    ? [region[1][0], region[1][1], region[0][0], region[0][1]]
+    : null;
   return [node, roi];
 }

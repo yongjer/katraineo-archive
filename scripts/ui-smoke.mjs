@@ -74,11 +74,33 @@ for (const step of steps) {
     await sleep(150);
   }
   if (step.key) {
-    const keyCodes = { ArrowLeft: 37, ArrowRight: 39, ArrowUp: 38, ArrowDown: 40, Enter: 13, Escape: 27, " ": 32, Tab: 9, Home: 36, End: 35 };
+    const keyCodes = {
+      ArrowLeft: 37,
+      ArrowRight: 39,
+      ArrowUp: 38,
+      ArrowDown: 40,
+      Enter: 13,
+      Escape: 27,
+      " ": 32,
+      Tab: 9,
+      Home: 36,
+      End: 35,
+    };
     const code = keyCodes[step.key] ?? step.key.toUpperCase().charCodeAt(0);
     const text = step.key.length === 1 ? step.key : undefined;
-    await send("Input.dispatchKeyEvent", { type: "keyDown", key: step.key, windowsVirtualKeyCode: code, text, modifiers: step.modifiers ?? 0 });
-    await send("Input.dispatchKeyEvent", { type: "keyUp", key: step.key, windowsVirtualKeyCode: code, modifiers: step.modifiers ?? 0 });
+    await send("Input.dispatchKeyEvent", {
+      type: "keyDown",
+      key: step.key,
+      windowsVirtualKeyCode: code,
+      text,
+      modifiers: step.modifiers ?? 0,
+    });
+    await send("Input.dispatchKeyEvent", {
+      type: "keyUp",
+      key: step.key,
+      windowsVirtualKeyCode: code,
+      modifiers: step.modifiers ?? 0,
+    });
     await sleep(150);
   }
   if (step.eval) {

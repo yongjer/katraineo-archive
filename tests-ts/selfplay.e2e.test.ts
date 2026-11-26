@@ -22,8 +22,21 @@ function transport(): EngineTransport {
     setHandlers: (h) => (handlers = h),
     async start(s: EngineSettings) {
       mkdirSync(dataDir, { recursive: true });
-      const overrides = [`homeDataDir=${dataDir}`, "numAnalysisThreads=2", "numSearchThreads=2", "nnMaxBatchSize=8"].join(",");
-      proc = spawn(resourcePath("katrain/KataGo/katago"), ["analysis", "-model", resourcePath(s.model), "-config", resourcePath(s.config), "-override-config", overrides]);
+      const overrides = [
+        `homeDataDir=${dataDir}`,
+        "numAnalysisThreads=2",
+        "numSearchThreads=2",
+        "nnMaxBatchSize=8",
+      ].join(",");
+      proc = spawn(resourcePath("katrain/KataGo/katago"), [
+        "analysis",
+        "-model",
+        resourcePath(s.model),
+        "-config",
+        resourcePath(s.config),
+        "-override-config",
+        overrides,
+      ]);
       createInterface({ input: proc.stdout! }).on("line", (l) => handlers.onStdout(l));
       createInterface({ input: proc.stderr! }).on("line", (l) => handlers.onStderr(l));
       proc.on("exit", (c) => handlers.onExit(c));
@@ -46,7 +59,12 @@ async function until(cond: () => boolean, ms: number) {
 }
 
 describe.skipIf(!enabled)("self-play and tsumego with KataGo", () => {
-  const settings = { ...(defaultConfig.engine as unknown as EngineSettings), max_visits: 10, fast_visits: 4, max_time: 3 };
+  const settings = {
+    ...(defaultConfig.engine as unknown as EngineSettings),
+    max_visits: 10,
+    fast_visits: 4,
+    max_time: 3,
+  };
   const engine = new KataGoEngine(transport(), settings);
   beforeAll(() => engine.start(), 600_000);
   afterAll(() => engine.shutdown());

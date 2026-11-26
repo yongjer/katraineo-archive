@@ -45,6 +45,10 @@ export interface Platform {
   /** Save to `path`, or ask where to save when path is null. Returns the path written, or null if cancelled. */
   saveTextFile(contents: string, suggestedName: string, path: string | null): Promise<string | null>;
   loadConfig(): Promise<string | null>;
+  /** Move a saved config that could not be read aside, so that saving does not replace it. Resolves to where it is now. */
+  keepUnreadableConfig(): Promise<string>;
+  /** Tell the user something they must not miss, in a dialog. */
+  showWarning(message: string): Promise<void>;
   saveConfig(contents: string): Promise<void>;
 }
 
@@ -175,6 +179,14 @@ const tauriPlatform: Platform = {
   async loadConfig() {
     const { invoke } = await import("@tauri-apps/api/core");
     return invoke<string | null>("load_config");
+  },
+  async keepUnreadableConfig() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<string>("keep_unreadable_config");
+  },
+  async showWarning(text) {
+    const { message } = await import("@tauri-apps/plugin-dialog");
+    await message(text, { title: "Katraineo", kind: "warning" });
   },
   async saveConfig(contents) {
     const { invoke } = await import("@tauri-apps/api/core");
@@ -353,6 +365,15 @@ const browserPlatform: Platform = {
     } catch {
       return null;
     }
+  },
+  async keepUnreadableConfig() {
+    const key = "katrain-config.broken";
+    localStorage.setItem(key, localStorage.getItem("katrain-config") ?? "");
+    localStorage.removeItem("katrain-config");
+    return `localStorage "${key}"`;
+  },
+  async showWarning(text) {
+    window.alert(text);
   },
   async saveConfig(contents) {
     try {

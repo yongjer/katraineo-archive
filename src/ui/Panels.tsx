@@ -55,7 +55,7 @@ export function PlayersPanel() {
               <div className="player-meta">
                 <span className="player-name">{name && !name.includes("ㅤ") ? name : isAi ? t(setup.strategy) : t(PLAYER_HUMAN)}</span>
                 {rank && <span className="player-rank">{rank}</span>}
-                <span className="captures" title="captures">
+                <span className="captures" title={t("player:captures")}>
                   ⊙ {p === "B" ? captures.W : captures.B}
                 </span>
                 {isAi && aiThinking && next === p && <span className="thinking">…</span>}

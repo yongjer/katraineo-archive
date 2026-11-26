@@ -34,7 +34,19 @@ vi.mock("../src/state/platform", () => ({
   },
 }));
 
-import { getEngine, init, playAt, requestCloseDialog, restartEngine, setDialogCloseGuard, openDialog, updateConfig, useStore } from "../src/state/store";
+import {
+  analyzeExtra,
+  getEngine,
+  init,
+  playAt,
+  requestCloseDialog,
+  restartEngine,
+  setDialogCloseGuard,
+  openDialog,
+  togglePondering,
+  updateConfig,
+  useStore,
+} from "../src/state/store";
 
 const until = async (cond: () => boolean, ms = 2000) => {
   const start = Date.now();
@@ -97,6 +109,25 @@ describe("a stopped engine", () => {
     await restartEngine();
     expect(fake.starts).toBe(starts + 1);
     expect(getEngine()!.isAlive).toBe(true);
+  });
+});
+
+describe("a hidden window", () => {
+  it("keeps running the AI and pondering logic while animation frames are paused", async () => {
+    await ready();
+    // web views run no animation frames while the window is minimized: hold them until it is shown again
+    const frames: FrameRequestCallback[] = [];
+    vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => frames.push(cb));
+    try {
+      await new Promise((r) => setTimeout(r, 50)); // refreshes scheduled before the window was hidden
+      fake.sent.length = 0;
+      togglePondering();
+      await until(() => fake.sent.some((line) => line.includes('"maxVisits":10000000'))); // a ponder query
+    } finally {
+      vi.unstubAllGlobals();
+      for (const frame of frames.splice(0)) frame(performance.now());
+      analyzeExtra("stop");
+    }
   });
 });
 

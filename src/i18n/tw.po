@@ -1040,6 +1040,126 @@ msgstr "有尚未儲存的變更。"
 msgid "settings:discard"
 msgstr "捨棄變更"
 
+#. status bar messages
+msgid "AI move failed"
+msgstr "AI 落子失敗：{error}"
+
+msgid "Saving failed"
+msgstr "儲存失敗：{error}"
+
+msgid "Illegal move"
+msgstr "不合法的一手：{reason}"
+
+#. why a move is illegal, shown as {reason} in "Illegal move"
+msgid "Space occupied"
+msgstr "此處已有棋子"
+
+msgid "Ko"
+msgstr "劫，不能立即提回"
+
+msgid "Single stone suicide"
+msgstr "單子自殺"
+
+msgid "Suicide"
+msgstr "自殺"
+
+msgid "clipboard empty"
+msgstr "剪貼簿是空的。"
+
+#. engine status, in the status bar and on the engine indicator
+msgid "engine:ready"
+msgstr "KataGo 已就緒"
+
+msgid "engine:starting"
+msgstr "正在啟動 KataGo…"
+
+msgid "engine:pondering"
+msgstr "持續分析中"
+
+msgid "engine:queries"
+msgstr "剩餘分析請求：{count}"
+
+msgid "engine:not-running"
+msgstr "KataGo 未執行"
+
+msgid "KataGo stopped"
+msgstr "KataGo 已停止"
+
+msgid "Starting KataGo failed"
+msgstr "KataGo 啟動失敗：{error}"
+
+msgid "KataGo engine failed"
+msgstr "KataGo 引擎發生錯誤：{error}"
+
+msgid "Engine exited unexpectedly"
+msgstr "引擎意外終止（結束代碼 {code}）"
+
+#. errors of the AI, shown as {error} in "AI move failed"
+msgid "No moves found - are you using an older KataGo with no per-move ownership info?"
+msgstr "找不到可下的棋步：你用的 KataGo 是否為不提供逐手領地資訊的舊版本？"
+
+msgid "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+msgstr "分析結果中沒有 humanPolicy：你是否已下載並設定擬人模型？"
+
+#. navigation buttons below the board; the keyboard shortcut is added after the text
+msgid "nav:previous-mistake"
+msgstr "上一個失誤"
+
+msgid "nav:start"
+msgstr "回到開頭"
+
+msgid "nav:back-10"
+msgstr "後退 10 手"
+
+msgid "nav:previous"
+msgstr "上一手"
+
+msgid "nav:next"
+msgstr "下一手"
+
+msgid "nav:forward-10"
+msgstr "前進 10 手"
+
+msgid "nav:end"
+msgstr "跳到最後"
+
+msgid "nav:next-mistake"
+msgstr "下一個失誤"
+
+#. main menu
+msgid "menu:copy-sgf"
+msgstr "複製 SGF"
+
+msgid "menu:paste-sgf"
+msgstr "貼上 SGF／連結"
+
+msgid "menu:katago-log"
+msgstr "KataGo 紀錄"
+
+#. tooltip on a player's captured stones
+msgid "player:captures"
+msgstr "提子數"
+
+#. labels for screen readers
+msgid "a11y:menu"
+msgstr "選單"
+
+msgid "a11y:close"
+msgstr "關閉"
+
+msgid "a11y:move-tree"
+msgstr "棋譜樹"
+
+msgid "a11y:time-remaining"
+msgstr "剩餘時間"
+
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "無法讀取你的設定，因此 Katraineo 以預設設定啟動。"
+
+msgid "config:kept"
+msgstr "無法讀取的設定檔已保留為 {file}。"
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

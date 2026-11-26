@@ -23,7 +23,7 @@ import { parseGameFile, parseSgf, writeSgf } from "../core/sgf";
 import { addTsumegoFrame } from "../core/tsumego";
 import { setLanguage } from "../ui/i18nLoader";
 import { sounds } from "../ui/sounds";
-import { parseSavedConfig, type AnalysisToggles, type AppConfig } from "./config";
+import { isUnreadableConfig, parseSavedConfig, type AnalysisToggles, type AppConfig } from "./config";
 import { platform } from "./platform";
 
 export interface Status {
@@ -96,18 +96,30 @@ function log(message: string, level: LogLevel = "info") {
   set((s) => ({ logs: [...s.logs.slice(-499), { message, level }] }));
 }
 
-let refreshScheduled = false;
-/** Re-render (at most once per frame) and run the AI / pondering logic. */
+let renderScheduled = false;
+let updateScheduled = false;
+/**
+ * Re-render (at most once per frame) and run the AI / teaching / pondering logic (at most about as often).
+ * The logic runs on a timer of its own: web views pause animation frames while the window is minimized or hidden,
+ * and AI moves must go on then.
+ */
 export function refresh() {
-  if (refreshScheduled) return;
-  refreshScheduled = true;
-  const run = () => {
-    refreshScheduled = false;
-    set((s) => ({ tick: s.tick + 1 }));
-    updateState();
-  };
-  if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(run);
-  else setTimeout(run, 16);
+  if (!updateScheduled) {
+    updateScheduled = true;
+    setTimeout(() => {
+      updateScheduled = false;
+      updateState();
+    }, 16);
+  }
+  if (!renderScheduled) {
+    renderScheduled = true;
+    const render = () => {
+      renderScheduled = false;
+      set((s) => ({ tick: s.tick + 1 }));
+    };
+    if (typeof requestAnimationFrame !== "undefined") requestAnimationFrame(render);
+    else setTimeout(render, 16);
+  }
 }
 
 export function setStatus(message: string, level: StatusLevel = "info") {
@@ -212,7 +224,7 @@ async function aiMove(node: GameNode) {
     if (played && get().game === game) sounds.stone();
   } catch (e) {
     log(`AI move failed: ${e}`, "error");
-    setStatus(`AI move failed: ${e}`, "error");
+    setStatus(tf("AI move failed", { error: String(e) }), "error");
   } finally {
     set({ aiThinking: false });
     refresh();
@@ -220,12 +232,26 @@ async function aiMove(node: GameNode) {
 }
 
 // ---------------------------------------------------------------- lifecycle
+/** The saved config could not be read: keep it, as the next save would replace it, and tell the user. */
+async function keepUnreadableConfig() {
+  let message = t("config:unreadable");
+  try {
+    message += `\n\n${tf("config:kept", { file: await platform.keepUnreadableConfig() })}`;
+  } catch (e) {
+    log(`Keeping the unreadable config failed: ${e}`, "error");
+  }
+  log(message, "error");
+  void platform.showWarning(message).catch((e) => log(`Showing a warning failed: ${e}`, "error"));
+}
+
 let initialized = false;
 export async function init() {
   if (initialized) return;
   initialized = true;
-  const config = parseSavedConfig(await platform.loadConfig().catch(() => null));
+  const saved = await platform.loadConfig().catch(() => null);
+  const config = parseSavedConfig(saved);
   await setLanguage(config.general.lang).catch(() => {});
+  if (isUnreadableConfig(saved)) await keepUnreadableConfig();
   set({ config, ready: true, lang: config.general.lang });
   await startEngine();
   newGame(undefined, { fromConfig: true });
@@ -362,7 +388,7 @@ export async function saveGame(saveAs = false) {
       setStatus(tf("sgf written", { file_name: path }), "info");
     }
   } catch (e) {
-    setStatus(`Saving failed: ${e}`, "error");
+    setStatus(tf("Saving failed", { error: String(e) }), "error");
   }
 }
 
@@ -393,7 +419,7 @@ export function playAt(coords: Coords | null) {
     else if (coords) sounds.stone();
     clearStatus();
   } catch (e) {
-    if (e instanceof IllegalMoveException) setStatus(`Illegal Move: ${e.message}`, "error");
+    if (e instanceof IllegalMoveException) setStatus(tf("Illegal move", { reason: t(e.message) }), "error");
     else throw e;
   }
   refresh();
@@ -727,7 +753,7 @@ export async function pasteSgf() {
     return;
   }
   if (!text.trim()) {
-    setStatus("Ctrl-V pressed but clipboard is empty.", "info");
+    setStatus(t("clipboard empty"), "info");
     return;
   }
   const url = /^(https?:\/\/\S+)/.exec(text.trim());

@@ -1056,6 +1056,141 @@ msgstr "Échec de la connexion au KataGo distant à {url} : {error}"
 msgid "Remote KataGo engine disconnected"
 msgstr "Moteur KataGo distant déconnecté : {error}"
 
+msgid "Reconnecting to remote KataGo"
+msgstr "Reconnexion au KataGo distant (tentative {attempt}/{total})..."
+
+msgid "Reconnected to remote KataGo"
+msgstr "Reconnecté au KataGo distant."
+
+msgid "engine:restart:hint"
+msgstr "Cliquez pour redémarrer KataGo."
+
+msgid "settings:unsaved"
+msgstr "Certaines modifications ne sont pas enregistrées."
+
+msgid "settings:discard"
+msgstr "Abandonner les modifications"
+
+#. status bar messages
+msgid "AI move failed"
+msgstr "Le joueur artificiel n'a pas pu jouer : {error}"
+
+msgid "Saving failed"
+msgstr "Échec de l'enregistrement : {error}"
+
+msgid "Illegal move"
+msgstr "Coup illégal : {reason}"
+
+#. why a move is illegal, shown as {reason} in "Illegal move"
+msgid "Space occupied"
+msgstr "Intersection déjà occupée"
+
+msgid "Ko"
+msgstr "Ko"
+
+msgid "Single stone suicide"
+msgstr "Suicide d'une pierre isolée"
+
+msgid "Suicide"
+msgstr "Suicide"
+
+msgid "clipboard empty"
+msgstr "Le presse-papier est vide."
+
+#. engine status, in the status bar and on the engine indicator
+msgid "engine:ready"
+msgstr "KataGo prêt"
+
+msgid "engine:starting"
+msgstr "Démarrage de KataGo…"
+
+msgid "engine:pondering"
+msgstr "Analyse continue"
+
+msgid "engine:queries"
+msgstr "Requêtes restantes : {count}"
+
+msgid "engine:not-running"
+msgstr "KataGo n'est pas lancé"
+
+msgid "KataGo stopped"
+msgstr "KataGo s'est arrêté"
+
+msgid "Starting KataGo failed"
+msgstr "Échec du démarrage de KataGo : {error}"
+
+msgid "KataGo engine failed"
+msgstr "Erreur du moteur KataGo : {error}"
+
+msgid "Engine exited unexpectedly"
+msgstr "Le moteur de jeu s'est arrêté de façon inattendue (code {code})"
+
+#. errors of the AI, shown as {error} in "AI move failed"
+msgid "No moves found - are you using an older KataGo with no per-move ownership info?"
+msgstr "Aucun coup trouvé – utilisez-vous une ancienne version de KataGo, sans prévisions territoriales pour chaque coup ?"
+
+msgid "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+msgstr "humanPolicy absent de l'analyse – avez-vous téléchargé et configuré le modèle imitant le jeu humain ?"
+
+#. navigation buttons below the board; the keyboard shortcut is added after the text
+msgid "nav:previous-mistake"
+msgstr "Erreur précédente"
+
+msgid "nav:start"
+msgstr "Aller au début"
+
+msgid "nav:back-10"
+msgstr "Reculer de 10 coups"
+
+msgid "nav:previous"
+msgstr "Coup précédent"
+
+msgid "nav:next"
+msgstr "Coup suivant"
+
+msgid "nav:forward-10"
+msgstr "Avancer de 10 coups"
+
+msgid "nav:end"
+msgstr "Aller à la fin"
+
+msgid "nav:next-mistake"
+msgstr "Erreur suivante"
+
+#. main menu
+msgid "menu:copy-sgf"
+msgstr "Copier le SGF"
+
+msgid "menu:paste-sgf"
+msgstr "Coller un SGF / un lien"
+
+msgid "menu:katago-log"
+msgstr "Journal de KataGo"
+
+#. tooltip on a player's captured stones
+msgid "player:captures"
+msgstr "Pierres capturées"
+
+#. labels for screen readers
+msgid "a11y:menu"
+msgstr "Menu"
+
+msgid "a11y:close"
+msgstr "Fermer"
+
+msgid "a11y:move-tree"
+msgstr "Arbre des coups"
+
+msgid "a11y:time-remaining"
+msgstr "Temps restant"
+
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "Vos paramètres n'ont pas pu être lus : Katraineo a démarré avec les paramètres par défaut."
+
+msgid "config:kept"
+msgstr "Le fichier de paramètres illisible a été conservé sous {file}."
+
 #. Shown instead of "engine died popup opening message" for remote
 #. engines.
 msgid "remote engine disconnected popup opening message"

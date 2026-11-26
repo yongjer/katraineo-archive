@@ -189,7 +189,7 @@ export class KataGoEngine {
 
   /** What the status bar should keep showing about the engine: why it stopped, or the reconnect progress. */
   get connectionMessage(): string | null {
-    if (this.state === "dead") return this.lastError ?? "KataGo stopped";
+    if (this.state === "dead") return this.lastError ?? t("KataGo stopped");
     if (this.reconnecting) return this.reconnectMessage;
     return null;
   }
@@ -214,7 +214,7 @@ export class KataGoEngine {
       if (run === this.startCount && this.state === "starting" && result?.ready) this.setState("ready");
     } catch (e) {
       if (run !== this.startCount) return;
-      this.startFailed(this.isRemote ? tf("Connecting to remote KataGo failed", { url, error: e }) : `Starting KataGo failed: ${e}`);
+      this.startFailed(this.isRemote ? tf("Connecting to remote KataGo failed", { url, error: e }) : tf("Starting KataGo failed", { error: e }));
     }
   }
 
@@ -398,7 +398,7 @@ export class KataGoEngine {
       return;
     }
     if (line.includes("Uncaught exception") || line.includes("what()")) {
-      this.lastError = `KataGo Engine Failed: ${line.slice(9).trim()}`;
+      this.lastError = tf("KataGo engine failed", { error: line.slice(9).trim() });
       this.log(this.lastError, "error");
       this.setState("dead");
       return;
@@ -416,7 +416,7 @@ export class KataGoEngine {
       return;
     }
     this.lastError =
-      this.lastError ?? (this.isRemote ? tf("Remote KataGo engine disconnected", { error: this.disconnectReason }) : `Engine died unexpectedly (status ${code})`);
+      this.lastError ?? (this.isRemote ? tf("Remote KataGo engine disconnected", { error: this.disconnectReason }) : tf("Engine exited unexpectedly", { code }));
     this.log(this.lastError, "error");
     this.queries.clear();
     this.sentPayloads.clear();

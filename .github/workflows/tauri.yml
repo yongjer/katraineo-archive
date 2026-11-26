@@ -23,20 +23,64 @@ on:
       macos_runner:
         description: "Runner label for the Apple Silicon build. The Homebrew libraries bundled with KataGo come from it, so a newer macOS can raise the app's minimum macOS."
         default: macos-15
-      release_preview:
-        description: "Sign the installers and write latest.json as for a release, and keep them as an artifact instead of publishing a release"
-        type: boolean
-        default: false
+      release:
+        description: "preview: sign the installers and write latest.json as for a release, kept as an artifact. draft: release the version in package.json (run it on main): tag this commit v<version> and create a draft release, to publish by hand. publish: the same, published at once as the latest release."
+        type: choice
+        options: [none, preview, draft, publish]
+        default: none
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.release.outputs.release }}
+      sign: ${{ steps.release.outputs.sign }}
+      version: ${{ steps.release.outputs.version }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
+      # What this run releases (see "Releases" in DEVELOPMENT.md): a tag v<version> makes a draft release, and a run
+      # started by hand what its release input says. Checked first, so that a mistake fails before the builds.
+      - name: Check what to release
+        id: release
+        env:
+          RELEASE: ${{ startsWith(github.ref, 'refs/tags/v') && 'draft' || inputs.release || 'none' }}
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          case "$RELEASE" in
+            none | preview) ;;
+            draft | publish)
+              if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+                if [ "$GITHUB_REF_NAME" != "$tag" ]; then
+                  echo "::error::The tag is $GITHUB_REF_NAME, but the version is $version (scripts/set-version.mjs sets it)"
+                  exit 1
+                fi
+              elif [ "$GITHUB_REF" != refs/heads/main ]; then
+                echo "::error::Releases are made from main, not from $GITHUB_REF_NAME"
+                exit 1
+              fi
+              # the commit the tag points to, if there is one (the second line, for an annotated tag)
+              tagged=$(git ls-remote origin "refs/tags/$tag" "refs/tags/$tag^{}" | tail -n1 | cut -f1)
+              if [ -n "$tagged" ] && [ "$tagged" != "$GITHUB_SHA" ]; then
+                echo "::error::$version is already released, from commit $tagged: set the next version with scripts/set-version.mjs"
+                exit 1
+              fi
+              ;;
+            *)
+              echo "::error::Unknown release input: $RELEASE"
+              exit 1
+              ;;
+          esac
+          {
+            echo "release=$RELEASE"
+            echo "sign=$([ "$RELEASE" = none ] && echo false || echo true)"
+            echo "version=$version"
+          } >> "$GITHUB_OUTPUT"
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
@@ -176,7 +220,7 @@ jobs:
       # What the updater installs on macOS: the app bundle as a .tar.gz with Katraineo.app at the top, named after the
       # architecture since both Macs build one. COPYFILE_DISABLE and --no-mac-metadata keep AppleDouble files out.
       - name: Pack the app for the updater
-        if: startsWith(matrix.platform, 'macos') && (startsWith(github.ref, 'refs/tags/v') || inputs.release_preview)
+        if: startsWith(matrix.platform, 'macos') && needs.test.outputs.sign == 'true'
         run: |
           set -euo pipefail
           version=$(node -p "require('./package.json').version")
@@ -344,15 +388,20 @@ jobs:
           printf '%s\n' "${files[@]}"
           gh release upload tauri-nightly "${files[@]}" --clobber
 
-  # A tag v<version> builds a release: this signs the installers for the updater (the only job with the signing key),
-  # writes latest.json, and creates a draft release with them, to be published by hand. With the release_preview input
-  # it does the same, but keeps the signatures and latest.json as an artifact instead.
+  # A release, or a preview of one (see "Releases" in DEVELOPMENT.md), once the end-to-end tests have passed: this signs
+  # the installers for the updater (the only job with the signing key) and writes latest.json. A release then gets its
+  # tag, if it was started by hand, and a GitHub release with all of them: a draft to publish by hand, or published at
+  # once. A preview keeps the signatures and latest.json as an artifact instead.
   release:
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v') || inputs.release_preview
+    needs: [test, build, e2e]
+    if: needs.test.outputs.sign == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      RELEASE: ${{ needs.test.outputs.release }}
+      VERSION: ${{ needs.test.outputs.version }}
+      TAG: v${{ needs.test.outputs.version }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -360,17 +409,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Check the version
-        id: version
-        run: |
-          set -euo pipefail
-          version=$(node -p "require('./package.json').version")
-          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v$version" ]]; then
-            echo "::error::The tag is $GITHUB_REF_NAME, but the version is $version (scripts/set-version.mjs sets it)"
-            exit 1
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "tag=v$version" >> "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@v5
         with:
           pattern: katraineo-tauri-*
@@ -380,8 +418,6 @@ jobs:
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-          VERSION: ${{ steps.version.outputs.version }}
-          TAG: ${{ steps.version.outputs.tag }}
         run: |
           set -euo pipefail
           if [ -z "$TAURI_SIGNING_PRIVATE_KEY" ]; then
@@ -405,21 +441,28 @@ jobs:
             "Katraineo $VERSION: https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
           cat release/latest.json
       - name: Keep the signatures and latest.json
-        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        if: env.RELEASE == 'preview'
         uses: actions/upload-artifact@v5
         with:
           name: release-preview
           path: |
             release/*.sig
             release/latest.json
-      - name: Create a draft release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Create the release
+        if: env.RELEASE == 'draft' || env.RELEASE == 'publish'
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
-          TAG: ${{ steps.version.outputs.tag }}
         run: |
           set -euo pipefail
+          # The tag, for a release started by hand (a tag made with the workflow's token starts no other run).
+          # The test job checked that the version had no tag yet: check again, as one may have been pushed since.
+          tagged=$(git ls-remote origin "refs/tags/$TAG" "refs/tags/$TAG^{}" | tail -n1 | cut -f1)
+          if [ -z "$tagged" ]; then
+            gh api "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" > /dev/null
+          elif [ "$tagged" != "$GITHUB_SHA" ]; then
+            echo "::error::$TAG is already the tag of commit $tagged"
+            exit 1
+          fi
           cat > notes.md <<NOTES
           ## Install
 
@@ -433,7 +476,8 @@ jobs:
 
           Katraineo checks for updates when it starts, and installs them from the menu (*Check for Updates*).
           NOTES
-          # Not a prerelease: the updater reads latest.json from the latest release.
-          gh release create "$TAG" --draft --verify-tag --title "Katraineo $VERSION" --notes-file notes.md --generate-notes \
-            release/*
-
+          # Not a prerelease: the updater reads latest.json from the latest release. With the installers given here, gh
+          # publishes the release only once they are all uploaded.
+          if [ "$RELEASE" = publish ]; then publish=(--latest); else publish=(--draft); fi
+          gh release create "$TAG" "${publish[@]}" --verify-tag --title "Katraineo $VERSION" --notes-file notes.md \
+            --generate-notes release/*

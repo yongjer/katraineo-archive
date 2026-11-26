@@ -38,6 +38,7 @@ import { Graph } from "./Graph";
 import { MoveTree } from "./MoveTree";
 import { TimerPanel } from "./Timer";
 import { InfoPanel, PlayersPanel, StatsPanel } from "./Panels";
+import { WheelStepper } from "./wheel";
 
 const TOGGLE_KEYS: Record<string, keyof AnalysisToggles> = {
   q: "show_children",
@@ -181,11 +182,12 @@ function onKeyDown(e: KeyboardEvent) {
   handled();
 }
 
+const wheel = new WheelStepper();
 function onWheel(e: WheelEvent) {
-  if ((e.target as HTMLElement).closest(".board-wrap")) {
-    if (e.deltaY > 0) redo(1);
-    else if (e.deltaY < 0) undo(1);
-  }
+  if (!(e.target as HTMLElement).closest(".board-wrap")) return;
+  const step = wheel.step(e.deltaY, e.deltaMode, performance.now());
+  if (step > 0) redo(1);
+  else if (step < 0) undo(1);
 }
 
 export function App() {

@@ -24,6 +24,7 @@ pub fn run() {
             files::write_text_file,
             files::load_config,
             files::save_config,
+            files::keep_unreadable_config,
             files::fetch_text,
             models::list_models,
             models::resolve_model_endpoint,

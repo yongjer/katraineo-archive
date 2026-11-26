@@ -31,6 +31,7 @@ import {
 } from "./constants";
 import type { Game } from "./game";
 import { GameNode, type CandidateMove, type KataGoResponse } from "./gameNode";
+import { t } from "./i18n";
 import { Move } from "./move";
 import { nLargest, varToGrid, weightedSelectionWithoutReplacement } from "./utils";
 
@@ -548,7 +549,7 @@ class SimpleOwnershipStrategy extends AIStrategy {
     const top = Move.fromGtp(cands[0].move, this.cn.nextPlayer);
     if (top.isPass) return [top, "Top move is pass, so passing regardless of strategy."];
     const moves = this.movesWithSettledness();
-    if (!moves.length) throw new Error("No moves found - are you using an older KataGo with no per-move ownership info?");
+    if (!moves.length) throw new Error(t("No moves found - are you using an older KataGo with no per-move ownership info?"));
     const desc = moves
       .slice(0, 5)
       .map(
@@ -596,7 +597,7 @@ class HumanStyleStrategy extends AIStrategy {
       return [Move.pass(this.cn.nextPlayer), "No valid moves found."];
     }
     const human = result.humanPolicy;
-    if (!human) throw new Error("humanPolicy not found in analysis\u2014have you downloaded and configured your human model yet?");
+    if (!human) throw new Error(t("humanPolicy not found in analysis—have you downloaded and configured your human model yet?"));
     const [sx, sy] = this.game.boardSize;
     const moves: [Move, number][] = [];
     for (let x = 0; x < sx; x++) {

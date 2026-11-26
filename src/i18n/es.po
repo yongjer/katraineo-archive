@@ -1054,6 +1054,197 @@ msgstr "Connecting to remote KataGo at {url} failed: {error}"
 msgid "Remote KataGo engine disconnected"
 msgstr "Remote KataGo engine disconnected: {error}"
 
+#. Restrict analysis to move range
+msgid "limit to moves"
+msgstr "Limitar a las jugadas"
+
+msgid "from move"
+msgstr "desde la jugada"
+
+msgid "to move"
+msgstr "hasta la jugada"
+
+#. status message
+msgid "move range analysis"
+msgstr "Reanalizando las jugadas {start_move} a {end_move} con {visits} visitas"
+
+msgid "short color B"
+msgstr "N"
+
+msgid "short color W"
+msgstr "B"
+
+msgid "show move numbers"
+msgstr "Mostrar los números de jugada en el tablero (alternar con 'm')"
+
+msgid "contribute:passwordwarning"
+msgstr "(Se guarda como texto sin cifrar; no la uses en ningún otro sitio)"
+
+msgid "engine:humanlike_model"
+msgstr "Ruta al modelo de estilo humano"
+
+msgid "Reconnecting to remote KataGo"
+msgstr "Reconectando con KataGo remoto (intento {attempt}/{total})..."
+
+msgid "Reconnected to remote KataGo"
+msgstr "Reconectado con KataGo remoto."
+
+msgid "engine:restart:hint"
+msgstr "Haz clic para reiniciar KataGo."
+
+msgid "settings:unsaved"
+msgstr "Hay cambios sin guardar."
+
+msgid "settings:discard"
+msgstr "Descartar cambios"
+
+#. status bar messages
+msgid "AI move failed"
+msgstr "Falló la jugada de la IA: {error}"
+
+msgid "Saving failed"
+msgstr "Error al guardar: {error}"
+
+msgid "Illegal move"
+msgstr "Jugada ilegal: {reason}"
+
+#. why a move is illegal, shown as {reason} in "Illegal move"
+msgid "Space occupied"
+msgstr "La intersección está ocupada"
+
+msgid "Ko"
+msgstr "Ko"
+
+msgid "Single stone suicide"
+msgstr "Suicidio de una piedra"
+
+msgid "Suicide"
+msgstr "Suicidio"
+
+msgid "clipboard empty"
+msgstr "El portapapeles está vacío."
+
+#. engine status, in the status bar and on the engine indicator
+msgid "engine:ready"
+msgstr "KataGo listo"
+
+msgid "engine:starting"
+msgstr "Iniciando KataGo…"
+
+msgid "engine:pondering"
+msgstr "Análisis continuo"
+
+msgid "engine:queries"
+msgstr "Consultas pendientes: {count}"
+
+msgid "engine:not-running"
+msgstr "KataGo no se está ejecutando"
+
+msgid "KataGo stopped"
+msgstr "KataGo se detuvo"
+
+msgid "Starting KataGo failed"
+msgstr "Error al iniciar KataGo: {error}"
+
+msgid "KataGo engine failed"
+msgstr "Error del motor KataGo: {error}"
+
+msgid "Engine exited unexpectedly"
+msgstr "El motor se cerró inesperadamente (estado {code})"
+
+#. errors of the AI, shown as {error} in "AI move failed"
+msgid "No moves found - are you using an older KataGo with no per-move ownership info?"
+msgstr "No se encontraron jugadas: ¿usas una versión antigua de KataGo sin información de territorio por jugada?"
+
+msgid "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+msgstr "No se encontró humanPolicy en el análisis: ¿ya descargaste y configuraste el modelo de estilo humano?"
+
+#. navigation buttons below the board; the keyboard shortcut is added after the text
+msgid "nav:previous-mistake"
+msgstr "Error anterior"
+
+msgid "nav:start"
+msgstr "Ir al inicio"
+
+msgid "nav:back-10"
+msgstr "Retroceder 10 jugadas"
+
+msgid "nav:previous"
+msgstr "Jugada anterior"
+
+msgid "nav:next"
+msgstr "Jugada siguiente"
+
+msgid "nav:forward-10"
+msgstr "Avanzar 10 jugadas"
+
+msgid "nav:end"
+msgstr "Ir al final"
+
+msgid "nav:next-mistake"
+msgstr "Error siguiente"
+
+#. main menu
+msgid "menu:copy-sgf"
+msgstr "Copiar SGF"
+
+msgid "menu:paste-sgf"
+msgstr "Pegar SGF / enlace"
+
+msgid "menu:katago-log"
+msgstr "Registro de KataGo"
+
+#. tooltip on a player's captured stones
+msgid "player:captures"
+msgstr "Piedras capturadas"
+
+#. labels for screen readers
+msgid "a11y:menu"
+msgstr "Menú"
+
+msgid "a11y:close"
+msgstr "Cerrar"
+
+msgid "a11y:move-tree"
+msgstr "Árbol de jugadas"
+
+msgid "a11y:time-remaining"
+msgstr "Tiempo restante"
+
+#. shown at startup when the settings file is damaged
+msgid "config:unreadable"
+msgstr "No se pudo leer tu configuración, así que Katraineo se inició con la configuración predeterminada."
+
+msgid "config:kept"
+msgstr "El archivo de configuración ilegible se conservó como {file}."
+
+msgid "general:anim_pv_moves"
+msgstr "Jugadas a mostrar al animar una secuencia (0 para no animar)"
+
+#. Shown instead of "engine died popup opening message" for remote engines.
+msgid "remote engine disconnected popup opening message"
+msgstr "Se perdió la conexión con el motor KataGo remoto y no se pudo restablecer automáticamente.\n\nEl error fue: [color=#CC2222]{error_message}[/color]\n\nEl código de error fue: [color=#CC2222]{code}[/color]."
+
+#. Link in tags should not be touched. Shown for remote engines.
+msgid "remote engine check url suggestion"
+msgstr "Si el motor remoto funcionó antes, presiona Reintentar para volver a conectarte cuando esté disponible de nuevo. Si no, revisa la URL del motor remoto en {link} ."
+
+#. Button to reconnect/restart the engine from the recovery popup.
+msgid "engine recovery: retry"
+msgstr "Reintentar"
+
+msgid "ai:human"
+msgstr "Estilo humano"
+
+msgid "aihelp:human"
+msgstr "Elige jugadas según un modelo de KataGo que imita el juego humano. Si 'modern_style' está marcado, el modelo juega con el estilo de apertura posterior a 2016, el de AlphaZero."
+
+msgid "ai:pro"
+msgstr "Profesional histórico"
+
+msgid "aihelp:pro"
+msgstr "Elige jugadas según un modelo de KataGo que imita el juego humano. En concreto, imita las jugadas de profesionales e insei fuertes a partir de partidas históricas del año indicado y de los años cercanos."
+
 msgid "engine:tab:local"
 msgstr "Motor local"
 

@@ -57,7 +57,8 @@ mod tests {
 
     #[test]
     fn keeps_the_entries_of_a_list_that_are_outside_the_appimage() {
-        let result = changes(&[("PATH", "/tmp/.mount_Katraineo/usr/bin/:/usr/local/bin:/tmp/.mount_Katraineo/bin/:/usr/bin")]);
+        let result =
+            changes(&[("PATH", "/tmp/.mount_Katraineo/usr/bin/:/usr/local/bin:/tmp/.mount_Katraineo/bin/:/usr/bin")]);
         assert_eq!(result, vec![("PATH".to_string(), Some("/usr/local/bin:/usr/bin".to_string()))]);
     }
 

@@ -32,9 +32,8 @@ pub fn resolve_resource(app: &AppHandle, path: &str) -> PathBuf {
 
 /// Look for an executable on PATH (plus Homebrew locations, which GUI apps on macOS do not inherit).
 pub fn find_in_path(name: &str) -> Option<PathBuf> {
-    let mut dirs: Vec<PathBuf> = std::env::var_os("PATH")
-        .map(|p| std::env::split_paths(&p).collect())
-        .unwrap_or_default();
+    let mut dirs: Vec<PathBuf> =
+        std::env::var_os("PATH").map(|p| std::env::split_paths(&p).collect()).unwrap_or_default();
     dirs.push(PathBuf::from("/opt/homebrew/bin"));
     dirs.push(PathBuf::from("/usr/local/bin"));
     let names: Vec<String> = if cfg!(target_os = "windows") && !name.to_lowercase().ends_with(".exe") {
@@ -42,7 +41,5 @@ pub fn find_in_path(name: &str) -> Option<PathBuf> {
     } else {
         vec![name.to_string()]
     };
-    dirs.iter()
-        .flat_map(|d| names.iter().map(move |n| d.join(n)))
-        .find(|p| p.is_file())
+    dirs.iter().flat_map(|d| names.iter().map(move |n| d.join(n))).find(|p| p.is_file())
 }

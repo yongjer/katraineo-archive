@@ -56,10 +56,12 @@ npm run typecheck
 npm run lint             # Oxlint, with the React hooks rules (.oxlintrc.json)
 npm run format           # Prettier; CI runs `npm run format:check`
 cargo test --manifest-path src-tauri/Cargo.toml
+cargo fmt --manifest-path src-tauri/Cargo.toml     # rustfmt (src-tauri/rustfmt.toml); CI runs it with --check
 ```
 
 ESLint is not used: typescript-eslint needs TypeScript's JavaScript API, which TypeScript 7 no longer has. To see the
-code before the Prettier reformatting in `git blame`, run `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
+code before the Prettier and rustfmt reformatting in `git blame`, run
+`git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 
 KataGo is bundled for Windows and Linux (`resources/KataGo`). For macOS, `scripts/build-katago-macos.sh` builds it
 from source (Metal on Apple Silicon, OpenCL on Intel) with its Homebrew libraries copied next to it, as CI does;
@@ -149,6 +151,13 @@ These are unsigned test builds.
 GitHub's macOS runners are often short of capacity, and it cancels a job that no runner picks up. When that happens to a
 macOS build, `.github/workflows/retry-macos.yml` re-runs the failed jobs, up to three times. Other failures are left alone.
 
+So that CI asks for few of them, everything that does not need a Mac runs on Linux (the `test` job: typecheck, lint,
+formatting, the unit tests, `cargo fmt`, `cargo test` and clippy), and pull requests build the macOS apps only when they
+change what those are built from besides the frontend: `src-tauri/`, `resources/`, `scripts/build-katago-macos.sh`, the
+npm packages or the workflow. The frontend is the same on every platform, the Linux and Windows builds compile it, and
+the end-to-end tests use it in WebKit on Linux. Pushes to `main`, tags and runs started by hand build everything. A
+newer push to a pull request cancels the run of the older one.
+
 ## Releases
 
 The version is recorded in `package.json` (which `tauri.conf.json` reads), `package-lock.json`, `src-tauri/Cargo.toml`
@@ -160,10 +169,14 @@ a `.deb` and an AppImage but no `.rpm`, whose version cannot have a pre-release 
 To release:
 
 1. `node scripts/set-version.mjs <version>`, and merge that to `main`.
-2. `git tag v<version>` on that commit and `git push origin v<version>`.
-3. CI builds the installers, signs them for the updater, writes `latest.json`, and creates a **draft** release with all
-   of them. Check it and publish it, **not as a pre-release**: the app reads
-   `releases/latest/download/latest.json`, and GitHub's "latest" release is never a pre-release.
+2. Actions → Tauri app → Run workflow, on `main`, with *release* set to `publish` or `draft`. (Pushing a tag
+   `v<version>` on that commit does the same as `draft`.) The run first checks that this version has no tag yet, so if
+   the version was not set, it fails at once rather than after the builds.
+3. CI builds the installers, runs the end-to-end tests, signs the installers for the updater, writes `latest.json`, tags
+   the commit `v<version>`, and creates a release with all of them. With `publish` it is published at once as the
+   latest release, and every installed copy is offered it. A `draft` is checked and published by hand, **not as a
+   pre-release**: the app reads `releases/latest/download/latest.json`, and GitHub's "latest" release is never a
+   pre-release.
 
 ### Updates
 
@@ -183,8 +196,8 @@ one.
 
 To try it without releasing anything:
 
-* Run the workflow by hand with `release_preview` (Actions → Tauri app → Run workflow): it builds and signs the
-  installers as for a release, and keeps the signatures and `latest.json` as an artifact.
+* Run the workflow by hand with *release* set to `preview` (Actions → Tauri app → Run workflow), on any branch: it
+  builds and signs the installers as for a release, and keeps the signatures and `latest.json` as an artifact.
 * `KATRAINEO_UPDATE_ENDPOINT=https://.../latest.json` makes the app check that manifest instead of the latest release.
   It must be served over https.
 

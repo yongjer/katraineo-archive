@@ -194,7 +194,8 @@ pub async fn fetch_text(url: String) -> Result<String, String> {
 /// GET `url`, reading at most `limit` bytes: a server that sends more, with or without saying so in Content-Length,
 /// is cut off instead of read to the end.
 async fn fetch_limited(client: &reqwest::Client, url: &str, limit: usize) -> Result<Vec<u8>, String> {
-    let error = |e: reqwest::Error| if e.is_timeout() { format!("{url} did not answer in time") } else { e.to_string() };
+    let error =
+        |e: reqwest::Error| if e.is_timeout() { format!("{url} did not answer in time") } else { e.to_string() };
     let too_large = || format!("{url} is too large to be a game record");
     let mut res = client.get(url).send().await.map_err(error)?;
     if !res.status().is_success() {
@@ -302,7 +303,8 @@ mod tests {
     }
 
     fn names(dir: &Path) -> Vec<String> {
-        let mut names: Vec<String> = fs::read_dir(dir).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
+        let mut names: Vec<String> =
+            fs::read_dir(dir).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
         names.sort();
         names
     }

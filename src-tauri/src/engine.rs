@@ -315,7 +315,10 @@ async fn start_remote(app: AppHandle, generation: u64, url: String) -> Result<St
                 Some(Ok(Message::Text(t))) => t.to_string(),
                 Some(Ok(Message::Binary(b))) => String::from_utf8_lossy(&b).into_owned(),
                 Some(Ok(Message::Close(frame))) => {
-                    break frame.map(|f| f.reason.to_string()).filter(|r| !r.is_empty()).unwrap_or_else(|| "closed by remote".into())
+                    break frame
+                        .map(|f| f.reason.to_string())
+                        .filter(|r| !r.is_empty())
+                        .unwrap_or_else(|| "closed by remote".into())
                 }
                 Some(Ok(_)) => continue, // ping/pong
                 Some(Err(e)) => break e.to_string(),
@@ -331,7 +334,10 @@ async fn start_remote(app: AppHandle, generation: u64, url: String) -> Result<St
             if let Ok(mut guard) = state.running.lock() {
                 *guard = None;
             }
-            let _ = app_read.emit("katago-stderr", LinePayload { generation, line: format!("Remote KataGo disconnected: {reason}") });
+            let _ = app_read.emit(
+                "katago-stderr",
+                LinePayload { generation, line: format!("Remote KataGo disconnected: {reason}") },
+            );
         }
         emit_exit(&app_read, generation, None);
     });
@@ -380,7 +386,12 @@ mod tests {
     use super::*;
 
     fn launch(backend: &str, remote_url: &str, altcommand: &str) -> EngineLaunch {
-        EngineLaunch { backend: backend.into(), remote_url: remote_url.into(), altcommand: altcommand.into(), ..Default::default() }
+        EngineLaunch {
+            backend: backend.into(),
+            remote_url: remote_url.into(),
+            altcommand: altcommand.into(),
+            ..Default::default()
+        }
     }
 
     #[test]

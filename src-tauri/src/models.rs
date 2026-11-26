@@ -56,7 +56,8 @@ pub fn list_models(app: AppHandle, extra_paths: Vec<String>) -> Result<Vec<Model
     }
     for p in extra_paths.iter().filter(|p| !p.trim().is_empty()) {
         let resolved = paths::resolve_resource(&app, p.trim());
-        let dir = if resolved.is_dir() { resolved } else { resolved.parent().map(Path::to_path_buf).unwrap_or(resolved) };
+        let dir =
+            if resolved.is_dir() { resolved } else { resolved.parent().map(Path::to_path_buf).unwrap_or(resolved) };
         dirs.push((dir, p.trim().starts_with("katrain")));
     }
     let mut seen = BTreeSet::new();
@@ -123,12 +124,20 @@ fn allowed(url: &str) -> bool {
 /// Download a model into the download folder, reporting progress as "model-download" events.
 /// Returns the saved path.
 #[tauri::command]
-pub async fn download_model(app: AppHandle, state: State<'_, Downloads>, name: String, url: String) -> Result<String, String> {
+pub async fn download_model(
+    app: AppHandle,
+    state: State<'_, Downloads>,
+    name: String,
+    url: String,
+) -> Result<String, String> {
     if !allowed(&url) {
         return Err(format!("Refusing to download from {url}"));
     }
     let file_name = url.rsplit('/').next().unwrap_or_default().to_string();
-    if file_name.is_empty() || file_name.contains("..") || !(file_name.ends_with(".bin.gz") || file_name.ends_with(".txt.gz")) {
+    if file_name.is_empty()
+        || file_name.contains("..")
+        || !(file_name.ends_with(".bin.gz") || file_name.ends_with(".txt.gz"))
+    {
         return Err(format!("Unexpected model file name in {url}"));
     }
     {
@@ -142,7 +151,8 @@ pub async fn download_model(app: AppHandle, state: State<'_, Downloads>, name: S
         active.remove(&file_name);
     }
     let report = |done: bool, error: Option<String>, path: Option<String>| {
-        let _ = app.emit("model-download", Progress { name: name.clone(), received: 0, total: None, done, error, path });
+        let _ =
+            app.emit("model-download", Progress { name: name.clone(), received: 0, total: None, done, error, path });
     };
     match &result {
         Ok(path) => report(true, None, Some(path.clone())),
@@ -160,7 +170,8 @@ async fn do_download(app: &AppHandle, name: &str, url: &str, file_name: &str) ->
         return Err(format!("Download of {name} failed: HTTP {}", res.status()));
     }
     let total = res.content_length();
-    let mut file = tokio::fs::File::create(&part).await.map_err(|e| format!("Could not create {}: {e}", part.display()))?;
+    let mut file =
+        tokio::fs::File::create(&part).await.map_err(|e| format!("Could not create {}: {e}", part.display()))?;
     let mut received: u64 = 0;
     let mut last_report: u64 = 0;
     let mut stream = res.bytes_stream();

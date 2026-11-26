@@ -162,14 +162,14 @@ export function ControlsBar() {
   return (
     <footer className="controls">
       <div className="nav">
-        <NavButton label="⇤✗" title="Previous mistake (N)" onClick={() => findMistake("undo")} mistake />
+        <NavButton label="⇤✗" title="Previous mistake (Shift+N)" onClick={() => findMistake("undo")} mistake />
         <NavButton label="⏮" title="Start (Home)" onClick={() => undo(9999)} />
         <NavButton label="⏪" title="-10 (Shift+Left)" onClick={() => undo(10)} />
         <NavButton label="◀" title="Previous (Left / Z)" onClick={() => undo(1)} />
         <NavButton label="▶" title="Next (Right / X)" onClick={() => redo(1)} />
         <NavButton label="⏩" title="+10 (Shift+Right)" onClick={() => redo(10)} />
         <NavButton label="⏭" title="End (End)" onClick={() => redo(9999)} />
-        <NavButton label="✗⇥" title="Next mistake (Shift+N)" onClick={() => findMistake("redo")} mistake />
+        <NavButton label="✗⇥" title="Next mistake (N)" onClick={() => findMistake("redo")} mistake />
       </div>
       <div className="actions">
         <button className="text-button" onClick={() => playAt(null)} title="P">

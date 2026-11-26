@@ -144,6 +144,9 @@ export class KataGoEngine {
   private reconnectMessage = "";
   private disconnectReason = "";
   private startCount = 0;
+  private restartCount = 0;
+  /** The transport a restart in progress switches to. */
+  private nextTransport: EngineTransport | null = null;
   private ponderQuery: Query | null = null;
   private queryCounter = 0;
   private basePriority = 0;
@@ -224,16 +227,24 @@ export class KataGoEngine {
     this.setState("dead");
   }
 
-  /** Restart with new settings; a new transport replaces the old one (e.g. switching to a remote engine). */
+  /**
+   * Restart with new settings; a new transport replaces the old one (e.g. switching to a remote engine).
+   * When restarts overlap (the settings changed again while the engine was still stopping), only the last one starts
+   * the engine: each starting it would start it twice, and the earlier start could make the later one fail.
+   */
   async restart(settings?: EngineSettings, transport?: EngineTransport) {
+    const run = ++this.restartCount;
     if (settings) this.settings = settings;
+    if (transport && transport !== this.transport) this.nextTransport = transport;
     this.queryGeneration++;
     this.queries.clear();
     this.sentPayloads.clear();
     this.ponderQuery = null;
     await this.shutdown();
-    if (transport && transport !== this.transport) {
-      this.transport = transport;
+    if (run !== this.restartCount) return; // a later restart starts the engine
+    if (this.nextTransport) {
+      this.transport = this.nextTransport;
+      this.nextTransport = null;
       this.installHandlers();
     }
     await this.start();

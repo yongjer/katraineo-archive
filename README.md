@@ -1,5 +1,7 @@
 # Katraineo
 
+![Katraineo analyzing game 4 of AlphaGo vs Lee Sedol at White 78, with Fan Hui's commentary](docs/screenshot.png)
+
 Katraineo is a tool for analyzing games and playing go with AI feedback from KataGo:
 
 * Review your games to find the moves that were most costly in terms of points lost.

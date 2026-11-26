@@ -17,7 +17,7 @@ export function TimerPanel() {
   const inByoYomi = timer.periods !== null;
   return (
     <div className={`timer panel ${timeout ? "timeout" : ""} ${timer.ai ? "ai" : ""}`}>
-      <span className="timer-digits" aria-label="Time remaining">
+      <span className="timer-digits" aria-label={t("a11y:time-remaining")}>
         {text}
       </span>
       {inByoYomi && <span className="timer-periods">×{timer.periods}</span>}

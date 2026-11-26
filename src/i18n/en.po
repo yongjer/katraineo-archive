@@ -689,6 +689,119 @@ msgstr "You have unsaved changes."
 msgid "settings:discard"
 msgstr "Discard changes"
 
+#. status bar messages
+msgid "AI move failed"
+msgstr "AI move failed: {error}"
+
+msgid "Saving failed"
+msgstr "Saving failed: {error}"
+
+msgid "Illegal move"
+msgstr "Illegal move: {reason}"
+
+#. why a move is illegal, shown as {reason} in "Illegal move"
+msgid "Space occupied"
+msgstr "Space occupied"
+
+msgid "Ko"
+msgstr "Ko"
+
+msgid "Single stone suicide"
+msgstr "Single stone suicide"
+
+msgid "Suicide"
+msgstr "Suicide"
+
+msgid "clipboard empty"
+msgstr "The clipboard is empty."
+
+#. engine status, in the status bar and on the engine indicator
+msgid "engine:ready"
+msgstr "KataGo ready"
+
+msgid "engine:starting"
+msgstr "Starting KataGo…"
+
+msgid "engine:pondering"
+msgstr "Continuous analysis"
+
+msgid "engine:queries"
+msgstr "Queries left: {count}"
+
+msgid "engine:not-running"
+msgstr "KataGo not running"
+
+msgid "KataGo stopped"
+msgstr "KataGo stopped"
+
+msgid "Starting KataGo failed"
+msgstr "Starting KataGo failed: {error}"
+
+msgid "KataGo engine failed"
+msgstr "KataGo engine failed: {error}"
+
+msgid "Engine exited unexpectedly"
+msgstr "Engine died unexpectedly (status {code})"
+
+#. errors of the AI, shown as {error} in "AI move failed"
+msgid "No moves found - are you using an older KataGo with no per-move ownership info?"
+msgstr "No moves found - are you using an older KataGo with no per-move ownership info?"
+
+msgid "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+msgstr "humanPolicy not found in analysis—have you downloaded and configured your human model yet?"
+
+#. navigation buttons below the board; the keyboard shortcut is added after the text
+msgid "nav:previous-mistake"
+msgstr "Previous mistake"
+
+msgid "nav:start"
+msgstr "Go to the start"
+
+msgid "nav:back-10"
+msgstr "10 moves back"
+
+msgid "nav:previous"
+msgstr "Previous move"
+
+msgid "nav:next"
+msgstr "Next move"
+
+msgid "nav:forward-10"
+msgstr "10 moves forward"
+
+msgid "nav:end"
+msgstr "Go to the end"
+
+msgid "nav:next-mistake"
+msgstr "Next mistake"
+
+#. main menu
+msgid "menu:copy-sgf"
+msgstr "Copy SGF"
+
+msgid "menu:paste-sgf"
+msgstr "Paste SGF / link"
+
+msgid "menu:katago-log"
+msgstr "KataGo log"
+
+#. tooltip on a player's captured stones
+msgid "player:captures"
+msgstr "Captured stones"
+
+#. labels for screen readers
+msgid "a11y:menu"
+msgstr "Menu"
+
+msgid "a11y:close"
+msgstr "Close"
+
+msgid "a11y:move-tree"
+msgstr "Move tree"
+
+msgid "a11y:time-remaining"
+msgstr "Time remaining"
+
 msgid "engine:max_visits"
 msgstr "Maximum number of visits in analysis"
 

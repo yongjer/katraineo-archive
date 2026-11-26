@@ -224,7 +224,7 @@ async function aiMove(node: GameNode) {
     if (played && get().game === game) sounds.stone();
   } catch (e) {
     log(`AI move failed: ${e}`, "error");
-    setStatus(`AI move failed: ${e}`, "error");
+    setStatus(tf("AI move failed", { error: String(e) }), "error");
   } finally {
     set({ aiThinking: false });
     refresh();
@@ -374,7 +374,7 @@ export async function saveGame(saveAs = false) {
       setStatus(tf("sgf written", { file_name: path }), "info");
     }
   } catch (e) {
-    setStatus(`Saving failed: ${e}`, "error");
+    setStatus(tf("Saving failed", { error: String(e) }), "error");
   }
 }
 
@@ -405,7 +405,7 @@ export function playAt(coords: Coords | null) {
     else if (coords) sounds.stone();
     clearStatus();
   } catch (e) {
-    if (e instanceof IllegalMoveException) setStatus(`Illegal Move: ${e.message}`, "error");
+    if (e instanceof IllegalMoveException) setStatus(tf("Illegal move", { reason: t(e.message) }), "error");
     else throw e;
   }
   refresh();
@@ -739,7 +739,7 @@ export async function pasteSgf() {
     return;
   }
   if (!text.trim()) {
-    setStatus("Ctrl-V pressed but clipboard is empty.", "info");
+    setStatus(t("clipboard empty"), "info");
     return;
   }
   const url = /^(https?:\/\/\S+)/.exec(text.trim());

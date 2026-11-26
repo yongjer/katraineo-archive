@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { Game, IllegalMoveException } from "../src/core/game";
@@ -337,5 +337,19 @@ describe("i18n", () => {
     expect(en["Info:score"]).toBe("Score: {score}");
     const tw = parsePo(readFileSync(join(root, "src/i18n/tw.po"), "utf-8"));
     expect(Object.keys(tw).length).toBeGreaterThan(200);
+  });
+  it("has an English text for every message the code looks up", () => {
+    const en = parsePo(readFileSync(join(root, "src/i18n/en.po"), "utf-8"));
+    const sources = (dir: string): string[] =>
+      readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory() ? sources(join(dir, e.name)) : /\.tsx?$/.test(e.name) ? [join(dir, e.name)] : [],
+      );
+    const used = new Set<string>();
+    for (const file of sources(join(root, "src"))) {
+      // t("...") and tf("...", ...), and the reasons of illegal moves (the status bar shows t(e.message))
+      for (const m of readFileSync(file, "utf-8").matchAll(/\b(?:tf?|IllegalMoveException)\(\s*"([^"]+)"/g)) used.add(m[1]);
+    }
+    expect(used.size).toBeGreaterThan(150);
+    expect([...used].filter((id) => !(id in en))).toEqual([]);
   });
 });

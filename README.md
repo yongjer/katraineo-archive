@@ -8,6 +8,15 @@
 
 ![Katraineo analyzing game 4 of AlphaGo vs Lee Sedol at White 78, with Fan Hui's commentary](docs/screenshot.png)
 
+> **Using an AI agent (Codex, Claude Code, Antigravity, etc.)?** Copy and paste this prompt into your agent:
+
+```text
+Set up Katraineo (https://github.com/yongjer/katraineo) for my OS and architecture:
+- To install the desktop app, download the matching installer from https://github.com/yongjer/katraineo/releases/latest (macOS: aarch64/x64 DMG or katraineo.rb Homebrew Cask with --no-quarantine; Windows: x64-setup.exe / .msi or katraineo.json Scoop manifest; Linux: .deb or .AppImage).
+- To build or develop from source, clone the repo, run `npm ci && npm run fetch:resources` (plus `scripts/build-katago-macos.sh` on macOS), and verify with `npm run typecheck && npm run lint && npm test`.
+- If KataGo fails to start on my GPU, configure KataGo's CPU (Eigen) build or help me connect a remote WebSocket KataGo engine.
+```
+
 ## Highlights
 
 * **Fast, native desktop experience** — Built with [Tauri v2](https://v2.tauri.app/) (Rust), React, and TypeScript with crisp SVG board rendering, native file dialogs, OS file associations (`.sgf`, `.gib`, `.ngf`), single-instance file handoff, remembered window layout, and a *Recent Files* menu.

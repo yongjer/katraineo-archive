@@ -16,12 +16,15 @@ import type { AppConfig } from "../state/config";
 import { platform } from "../state/platform";
 import {
   analyzeExtra,
+  discardAutosave,
   installUpdate,
-  newGame,
   openDialog,
+  recoverAutosave,
   requestCloseDialog,
+  requestNewGame,
+  requestSetupPosition,
+  resolveUnsaved,
   setDialogCloseGuard,
-  setupPosition,
   tsumegoFrame,
   updateConfig,
   updateTimerSettings,
@@ -182,8 +185,8 @@ export function NewGameDialog() {
           disabled={!valid || !setupValid}
           onClick={() => {
             close();
-            if (mode === "newgame") newGame(settings());
-            else setupPosition(settings(), parseInt(setupMove, 10), parseFloat(setupScore));
+            if (mode === "newgame") requestNewGame(settings());
+            else requestSetupPosition(settings(), parseInt(setupMove, 10), parseFloat(setupScore));
           }}
         >
           {t(mode)}
@@ -908,8 +911,50 @@ export function UpdateDialog() {
   );
 }
 
+export function UnsavedDialog() {
+  const cancel = () => void resolveUnsaved("cancel");
+  const footer = (
+    <div className="modal-actions">
+      <button className="text-button" onClick={cancel}>
+        {t("unsaved:cancel")}
+      </button>
+      <button className="text-button unsaved-discard" onClick={() => void resolveUnsaved("discard")}>
+        {t("unsaved:discard")}
+      </button>
+      <button className="primary" onClick={() => void resolveUnsaved("save")}>
+        {t("unsaved:save")}
+      </button>
+    </div>
+  );
+  return (
+    <Modal title={t("unsaved:title")} onClose={cancel} footer={footer}>
+      <p>{t("unsaved:message")}</p>
+    </Modal>
+  );
+}
+
+export function RecoveryDialog() {
+  const footer = (
+    <div className="modal-actions">
+      <button className="text-button" onClick={discardAutosave}>
+        {t("recovery:discard")}
+      </button>
+      <button className="primary" onClick={recoverAutosave}>
+        {t("recovery:recover")}
+      </button>
+    </div>
+  );
+  return (
+    <Modal title={t("recovery:title")} onClose={discardAutosave} footer={footer}>
+      <p>{t("recovery:message")}</p>
+    </Modal>
+  );
+}
+
 export function Dialogs() {
   const dialog = useStore((s) => s.dialog);
+  if (dialog === "unsaved") return <UnsavedDialog />;
+  if (dialog === "recovery") return <RecoveryDialog />;
   if (dialog === "reanalyze") return <ReanalyzeDialog />;
   if (dialog === "report") return <ReportDialog />;
   if (dialog === "timer") return <TimerDialog />;

@@ -17,7 +17,7 @@ import {
   getEngine,
   loadGame,
   openDialog,
-  openGamePath,
+  requestOpenGamePath,
   playAt,
   redo,
   resetAnalysis,
@@ -72,7 +72,7 @@ export function TopBar() {
                     key={path}
                     label={path.split(/[\\/]/).pop() ?? path}
                     title={path}
-                    onClick={() => void openGamePath(path)}
+                    onClick={() => requestOpenGamePath(path)}
                   />
                 ))}
                 <MenuItem label={t("menu:recent-clear")} onClick={clearRecentFiles} />

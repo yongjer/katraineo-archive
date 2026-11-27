@@ -69,6 +69,18 @@ export interface Platform {
   /** Tell the user something they must not miss, in a dialog. */
   showWarning(message: string): Promise<void>;
   saveConfig(contents: string): Promise<void>;
+  /** Persist an autosave snapshot for crash recovery. */
+  saveAutosave(contents: string): Promise<void>;
+  /** Read an existing autosave snapshot, or null when none is stored. */
+  loadAutosave(): Promise<string | null>;
+  /** Remove any stored autosave snapshot. */
+  clearAutosave(): Promise<void>;
+  /** Update the native window title (or document.title in browser). */
+  setWindowTitle(title: string): Promise<void>;
+  /** Intercept window close: return true from `cb` to cancel immediate close. */
+  onCloseRequested(cb: () => boolean): Promise<() => void>;
+  /** Force-close the app window after confirmation. */
+  closeWindow(): Promise<void>;
   appVersion(): Promise<string>;
   /** Ask the release page for a newer version of the app: null when this one is the newest. */
   checkForUpdate(): Promise<UpdateInfo | null>;
@@ -236,6 +248,32 @@ const tauriPlatform: Platform = {
   async saveConfig(contents) {
     const { invoke } = await import("@tauri-apps/api/core");
     await invoke("save_config", { contents });
+  },
+  async saveAutosave(contents) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("save_autosave", { contents });
+  },
+  async loadAutosave() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<string | null>("load_autosave");
+  },
+  async clearAutosave() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("clear_autosave");
+  },
+  async setWindowTitle(title) {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    await getCurrentWindow().setTitle(title);
+  },
+  async onCloseRequested(cb) {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    return getCurrentWindow().onCloseRequested((e) => {
+      if (cb()) e.preventDefault();
+    });
+  },
+  async closeWindow() {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    await getCurrentWindow().destroy();
   },
   async appVersion() {
     const { getVersion } = await import("@tauri-apps/api/app");
@@ -459,6 +497,40 @@ const browserPlatform: Platform = {
     } catch {
       /* storage unavailable */
     }
+  },
+  async saveAutosave(contents) {
+    try {
+      localStorage.setItem("katraineo-autosave", contents);
+    } catch {
+      /* storage unavailable */
+    }
+  },
+  async loadAutosave() {
+    try {
+      return localStorage.getItem("katraineo-autosave");
+    } catch {
+      return null;
+    }
+  },
+  async clearAutosave() {
+    try {
+      localStorage.removeItem("katraineo-autosave");
+    } catch {
+      /* storage unavailable */
+    }
+  },
+  async setWindowTitle(title) {
+    if (typeof document !== "undefined") document.title = title;
+  },
+  async onCloseRequested(cb) {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (cb()) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  },
+  async closeWindow() {
+    window.close();
   },
   async appVersion() {
     return packageJson.version;

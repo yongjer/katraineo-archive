@@ -190,6 +190,9 @@ try {
       sgf,
     );
     await s.press(Keys.Control, "v");
+    // The previous step played a move, so pasting prompts before discarding the unsaved game.
+    const discardBtn = await s.waitFor(".unsaved-discard", { timeout: 10000 });
+    await discardBtn.click();
     await until(async () => (await bodyText()).includes("Lee Sedol"), { what: "the game", timeout: 30000 });
     const pasted = Date.now();
     await s.press(Keys.Control, Keys.Left);

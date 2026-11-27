@@ -1245,3 +1245,31 @@ msgstr "最近開啟"
 
 msgid "menu:recent-clear"
 msgstr "清除最近紀錄"
+
+#. unsaved game confirmation & autosave recovery
+msgid "unsaved:title"
+msgstr "未儲存的棋局"
+
+msgid "unsaved:message"
+msgstr "目前棋局有尚未儲存的變更，要先儲存嗎？"
+
+msgid "unsaved:save"
+msgstr "儲存"
+
+msgid "unsaved:discard"
+msgstr "捨棄"
+
+msgid "unsaved:cancel"
+msgstr "取消"
+
+msgid "recovery:title"
+msgstr "復原未儲存的棋局"
+
+msgid "recovery:message"
+msgstr "Katraineo 偵測到上一次工作階段的自動暫存棋譜，是否要復原？"
+
+msgid "recovery:recover"
+msgstr "復原"
+
+msgid "recovery:discard"
+msgstr "捨棄"

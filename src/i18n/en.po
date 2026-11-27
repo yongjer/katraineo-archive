@@ -1314,3 +1314,31 @@ msgstr "Recent Files"
 
 msgid "menu:recent-clear"
 msgstr "Clear Recent Files"
+
+#. unsaved game confirmation & autosave recovery
+msgid "unsaved:title"
+msgstr "Unsaved Game"
+
+msgid "unsaved:message"
+msgstr "The current game has unsaved changes. Save before continuing?"
+
+msgid "unsaved:save"
+msgstr "Save"
+
+msgid "unsaved:discard"
+msgstr "Discard"
+
+msgid "unsaved:cancel"
+msgstr "Cancel"
+
+msgid "recovery:title"
+msgstr "Recover Unsaved Game"
+
+msgid "recovery:message"
+msgstr "Katraineo found an autosaved game from a previous session. Do you want to recover it?"
+
+msgid "recovery:recover"
+msgstr "Recover"
+
+msgid "recovery:discard"
+msgstr "Discard"

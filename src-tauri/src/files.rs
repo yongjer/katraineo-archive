@@ -219,6 +219,37 @@ pub fn save_config(app: AppHandle, contents: String) -> Result<(), String> {
     write_text_file(path.to_string_lossy().into_owned(), contents)
 }
 
+fn autosave_path(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    Ok(dir.join("autosave.sgf"))
+}
+
+#[tauri::command]
+pub fn save_autosave(app: AppHandle, contents: String) -> Result<(), String> {
+    let path = autosave_path(&app)?;
+    write_text_file(path.to_string_lossy().into_owned(), contents)
+}
+
+#[tauri::command]
+pub fn load_autosave(app: AppHandle) -> Result<Option<String>, String> {
+    let path = autosave_path(&app)?;
+    match fs::read_to_string(&path) {
+        Ok(s) => Ok(Some(s)),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(format!("Could not read {}: {e}", path.display())),
+    }
+}
+
+#[tauri::command]
+pub fn clear_autosave(app: AppHandle) -> Result<(), String> {
+    let path = autosave_path(&app)?;
+    match fs::remove_file(&path) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(format!("Could not remove {}: {e}", path.display())),
+    }
+}
+
 /// The largest game record "paste a link to an SGF" downloads.
 const MAX_GAME_RECORD: usize = 10 << 20;
 

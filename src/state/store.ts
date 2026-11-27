@@ -44,7 +44,18 @@ export interface LogEntry {
 }
 
 export type DialogKind =
-  null | "newgame" | "settings" | "ai" | "log" | "timer" | "tsumego" | "report" | "reanalyze" | "update";
+  | null
+  | "newgame"
+  | "settings"
+  | "ai"
+  | "log"
+  | "timer"
+  | "tsumego"
+  | "report"
+  | "reanalyze"
+  | "update"
+  | "unsaved"
+  | "recovery";
 
 /** Updates of the app itself: `checking` and `latest` only follow a check from the menu. */
 export interface UpdateState {
@@ -85,6 +96,10 @@ interface State {
   selectingRegion: boolean;
   showCoords: boolean;
   update: UpdateState;
+  /** True when the active game has edits (moves, branches, notes) since last save or load. */
+  dirty: boolean;
+  /** SGF recovered from a previous session's autosave, waiting for user confirmation. */
+  recoverySgf: string | null;
 }
 
 export const useStore = create<State>(() => ({
@@ -103,6 +118,8 @@ export const useStore = create<State>(() => ({
   selectingRegion: false,
   showCoords: true,
   update: { phase: "idle", currentVersion: "", info: null, progress: null, error: null },
+  dirty: false,
+  recoverySgf: null,
 }));
 
 const get = useStore.getState;
@@ -244,7 +261,10 @@ async function aiMove(node: GameNode) {
   set({ aiThinking: true });
   try {
     const played = await generateAiMove(game, strategy, config.ai[strategy] ?? {});
-    if (played && get().game === game) sounds.stone();
+    if (played && get().game === game) {
+      sounds.stone();
+      markDirty();
+    }
   } catch (e) {
     log(`AI move failed: ${e}`, "error");
     setStatus(tf("AI move failed", { error: String(e) }), "error");
@@ -276,10 +296,15 @@ export async function init() {
   await setLanguage(config.general.lang).catch(() => {});
   if (isUnreadableConfig(saved)) await keepUnreadableConfig();
   set({ config, ready: true, lang: config.general.lang });
+  const autosave = await platform.loadAutosave?.().catch(() => null);
   await startEngine();
-  newGame(undefined, { fromConfig: true });
+  newGame(undefined, { fromConfig: true, keepAutosave: Boolean(autosave?.trim()) });
   const pendingPath = await platform.takePendingOpenFile?.().catch(() => null);
-  if (pendingPath) await openGamePath(pendingPath);
+  if (pendingPath) {
+    await openGamePath(pendingPath);
+  } else if (autosave?.trim()) {
+    set({ recoverySgf: autosave, dialog: "recovery" });
+  }
   void platform.appVersion().then((currentVersion) => setUpdate({ currentVersion }));
   if (config.general.check_for_updates) void checkForUpdates(false);
 }
@@ -357,16 +382,120 @@ export function updateConfig(mutator: (c: AppConfig) => void, opts: { restartDea
   refresh();
 }
 
-function startGame(game: Game, mode: UiMode) {
+// ---------------------------------------------------------------- dirty tracking, autosave & unsaved guard
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingUnsavedAction: (() => void | Promise<void>) | null = null;
+
+function syncWindowTitle(game = get().game, dirty = get().dirty) {
+  const file = game?.sgfFilename ? (game.sgfFilename.split(/[\\/]/).pop() ?? null) : null;
+  const title = `${dirty ? "• " : ""}${file ? `${file} — ` : ""}Katraineo`;
+  if (typeof document !== "undefined") document.title = title;
+  void platform.setWindowTitle?.(title)?.catch(() => {});
+}
+
+function clearAutosaveTimer() {
+  if (autosaveTimer !== null) {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = null;
+  }
+}
+
+function clearAutosaveNow() {
+  clearAutosaveTimer();
+  return platform.clearAutosave?.().catch(() => {}) ?? Promise.resolve();
+}
+
+function scheduleAutosave() {
+  clearAutosaveTimer();
+  autosaveTimer = setTimeout(() => {
+    autosaveTimer = null;
+    const { game, dirty } = get();
+    if (!game || !dirty) return;
+    void platform.saveAutosave?.(writeSgf(game.root))?.catch((e) => log(`Autosave failed: ${e}`, "debug"));
+  }, 1500);
+}
+
+/** Flush any pending debounced autosave immediately (e.g. for tests). */
+export async function flushAutosave() {
+  clearAutosaveTimer();
+  const { game, dirty } = get();
+  if (!game || !dirty) return;
+  await platform.saveAutosave?.(writeSgf(game.root))?.catch((e) => log(`Autosave failed: ${e}`, "debug"));
+}
+
+function markDirty() {
+  if (!get().dirty) set({ dirty: true });
+  syncWindowTitle(get().game, true);
+  scheduleAutosave();
+}
+
+export function guardUnsaved(action: () => void | Promise<void>) {
+  if (!get().dirty) {
+    void action();
+    return;
+  }
+  pendingUnsavedAction = action;
+  openDialog("unsaved");
+}
+
+export async function resolveUnsaved(choice: "save" | "discard" | "cancel") {
+  const action = pendingUnsavedAction;
+  if (choice === "cancel") {
+    pendingUnsavedAction = null;
+    openDialog(null);
+    return;
+  }
+  if (choice === "save") {
+    const saved = await saveGame(false);
+    if (!saved) return;
+  } else {
+    set({ dirty: false });
+    await clearAutosaveNow();
+    syncWindowTitle(get().game, false);
+  }
+  pendingUnsavedAction = null;
+  openDialog(null);
+  if (action) await action();
+}
+
+export function recoverAutosave() {
+  const sgf = get().recoverySgf;
+  set({ recoverySgf: null, dialog: null });
+  if (!sgf) return;
+  loadGameFromString(sgf, "autosave.sgf", null);
+  markDirty();
+}
+
+export function discardAutosave() {
+  set({ recoverySgf: null, dialog: null });
+  void clearAutosaveNow();
+}
+
+/** Called when the OS requests closing the main window; returns true to defer closing while confirming unsaved edits. */
+export function requestWindowClose(): boolean {
+  if (!get().dirty) {
+    void clearAutosaveNow();
+    return false;
+  }
+  guardUnsaved(async () => {
+    await clearAutosaveNow();
+    await platform.closeWindow?.();
+  });
+  return true;
+}
+
+function startGame(game: Game, mode: UiMode, opts: { keepAutosave?: boolean } = {}) {
   const old = get().game;
   if (old) old.active = false;
   resetTimer();
-  set({ game, mode, pondering: false });
+  set({ game, mode, pondering: false, dirty: false });
+  if (!opts.keepAutosave) void clearAutosaveNow();
+  syncWindowTitle(game, false);
   clearStatus();
   refresh();
 }
 
-export function newGame(settings?: NewGameSettings, opts: { fromConfig?: boolean } = {}) {
+export function newGame(settings?: NewGameSettings, opts: { fromConfig?: boolean; keepAutosave?: boolean } = {}) {
   if (playerTypesBeforeLoad) {
     const types = playerTypesBeforeLoad;
     playerTypesBeforeLoad = null;
@@ -391,7 +520,19 @@ export function newGame(settings?: NewGameSettings, opts: { fromConfig?: boolean
     });
   }
   engine?.onNewGame();
-  startGame(new Game(host, engine, { newGame: s, analyzeFast: true }), MODE_PLAY);
+  startGame(new Game(host, engine, { newGame: s, analyzeFast: true }), MODE_PLAY, { keepAutosave: opts.keepAutosave });
+}
+
+export function requestNewGame(settings?: NewGameSettings) {
+  guardUnsaved(() => newGame(settings));
+}
+
+export function requestOpenGamePath(path: string) {
+  guardUnsaved(() => openGamePath(path));
+}
+
+export function requestFileDrop(file: { contents: string; name: string; path: string | null }) {
+  guardUnsaved(() => loadGameFromString(file.contents, file.name, file.path));
 }
 
 function recordRecentFile(path: string | null) {
@@ -442,12 +583,14 @@ export async function openGamePath(path: string) {
 }
 
 export async function loadGame() {
-  try {
-    const file = await platform.openGameFile();
-    if (file) loadGameFromString(file.contents, file.name, file.path);
-  } catch (e) {
-    setStatus(tf("Failed to load SGF", { error: String(e) }), "error");
-  }
+  guardUnsaved(async () => {
+    try {
+      const file = await platform.openGameFile();
+      if (file) loadGameFromString(file.contents, file.name, file.path);
+    } catch (e) {
+      setStatus(tf("Failed to load SGF", { error: String(e) }), "error");
+    }
+  });
 }
 
 function playerName(p: Player): string | null {
@@ -456,9 +599,9 @@ function playerName(p: Player): string | null {
   return `${t(PLAYER_AI)} (${t(setup.strategy)})${SGF_INTERNAL_COMMENTS_MARKER}`;
 }
 
-export async function saveGame(saveAs = false) {
+export async function saveGame(saveAs = false): Promise<boolean> {
   const { game, config } = get();
-  if (!game) return;
+  if (!game) return false;
   game.updateRootProperties({ B: playerName("B"), W: playerName("W") });
   for (const p of ["B", "W"] as Player[]) {
     const setup = config.ui.players[p];
@@ -476,10 +619,16 @@ export async function saveGame(saveAs = false) {
     if (path) {
       game.sgfFilename = platform.isDesktop ? path : null;
       if (platform.isDesktop) recordRecentFile(path);
+      set({ dirty: false });
+      await clearAutosaveNow();
+      syncWindowTitle(game, false);
       setStatus(tf("sgf written", { file_name: path }), "info");
+      return true;
     }
+    return false;
   } catch (e) {
     setStatus(tf("Saving failed", { error: String(e) }), "error");
+    return false;
   }
 }
 
@@ -508,6 +657,7 @@ export function playAt(coords: Coords | null) {
     const after = game.prisonerCount.B + game.prisonerCount.W;
     if (after > before) sounds.capture();
     else if (coords) sounds.stone();
+    markDirty();
     clearStatus();
   } catch (e) {
     if (e instanceof IllegalMoveException) setStatus(tf("Illegal move", { reason: t(e.message) }), "error");
@@ -561,6 +711,7 @@ export function resign() {
   const game = get().game;
   if (!game) return;
   game.currentNode.endState = `${game.currentNode.player}+R`;
+  markDirty();
   refresh();
 }
 
@@ -626,6 +777,7 @@ export function addPvToTree(moves: string[]) {
     node = node.play(Move.fromGtp(gtp, node.nextPlayer));
     game.analyze(node, { analyzeFast: true });
   }
+  markDirty();
   refresh();
 }
 
@@ -661,12 +813,16 @@ export function editTree(edit: TreeEdit, node?: GameNode) {
   else if (edit === "prune") game.pruneBranch(target);
   else if (edit === "main") game.makeMainBranch(target);
   else game.toggleCollapse(target);
+  markDirty();
   refresh();
 }
 
 export function setNote(note: string) {
   const game = get().game;
-  if (game) game.currentNode.note = note;
+  if (game && game.currentNode.note !== note) {
+    game.currentNode.note = note;
+    markDirty();
+  }
 }
 
 /** A dialog can stop closing (Escape, the close button, a click outside) to ask about unsaved changes first. */
@@ -802,6 +958,7 @@ export function selfplayToEnd() {
   const game = get().game;
   if (!game || !game.engine) return;
   game.selfplay("end");
+  markDirty();
   refresh();
 }
 
@@ -824,6 +981,10 @@ export function setupPosition(settings: NewGameSettings, untilMove: number, blac
   start();
 }
 
+export function requestSetupPosition(settings: NewGameSettings, untilMove: number, blackScore: number) {
+  guardUnsaved(() => setupPosition(settings, untilMove, blackScore));
+}
+
 export function tsumegoFrame(ko: boolean, margin: number) {
   const game = get().game;
   if (!game || !game.stones.length) return;
@@ -832,6 +993,7 @@ export function tsumegoFrame(ko: boolean, margin: number) {
   set({ mode: MODE_ANALYZE });
   if (region) game.setRegionOfInterest(region);
   game.analyze(node);
+  markDirty();
   refresh();
 }
 
@@ -876,9 +1038,11 @@ export async function pasteSgf() {
     setStatus(tf("Failed to import from clipboard", { error: String(e), contents: text.slice(0, 50) }), "error");
     return;
   }
-  engine?.onNewGame();
-  const game = new Game(host, engine, { moveTree: tree, analyzeFast: true });
-  game.redo(9999);
-  startGame(game, MODE_ANALYZE);
-  log("Imported game from clipboard.", "info");
+  guardUnsaved(() => {
+    engine?.onNewGame();
+    const game = new Game(host, engine, { moveTree: tree, analyzeFast: true });
+    game.redo(9999);
+    startGame(game, MODE_ANALYZE);
+    log("Imported game from clipboard.", "info");
+  });
 }

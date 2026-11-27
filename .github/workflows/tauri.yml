@@ -63,7 +63,7 @@ jobs:
             # the files the pull request changes: its merge commit against the base branch (the first parent)
             while IFS= read -r file; do
               case "$file" in
-                src-tauri/* | resources/* | scripts/build-katago-macos.sh | package.json | package-lock.json | .github/workflows/tauri.yml)
+                src-tauri/* | resources/* | scripts/build-katago-macos.sh | scripts/fetch-resources.mjs | package.json | package-lock.json | .github/workflows/tauri.yml)
                   echo "$file: build macOS"
                   macos=true
                   ;;
@@ -119,6 +119,13 @@ jobs:
             echo "version=$version"
           } >> "$GITHUB_OUTPUT"
       - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: |
+            resources/models/b10c384h6nbttflrs.bin.gz
+            resources/KataGo/katago
+          key: resources-linux-${{ hashFiles('scripts/fetch-resources.mjs') }}
+      - run: node scripts/fetch-resources.mjs --platform linux
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
@@ -184,6 +191,22 @@ jobs:
         if: startsWith(matrix.platform, 'macos') && steps.katago-cache.outputs.cache-hit != 'true'
         run: scripts/build-katago-macos.sh
       - run: npm ci
+      - uses: actions/cache@v4
+        with:
+          path: |
+            resources/models/b10c384h6nbttflrs.bin.gz
+            resources/KataGo/katago
+            resources/KataGo/katago.exe
+            resources/KataGo/cacert.pem
+            resources/KataGo/bz2.dll
+            resources/KataGo/libcrypto-3-x64.dll
+            resources/KataGo/libssl-3-x64.dll
+            resources/KataGo/msvcp140*.dll
+            resources/KataGo/vcruntime140*.dll
+            resources/KataGo/z.dll
+            resources/KataGo/zip.dll
+          key: resources-${{ matrix.platform }}-${{ hashFiles('scripts/fetch-resources.mjs') }}
+      - run: node scripts/fetch-resources.mjs
       - run: npx tauri build
       - name: Check the bundled KataGo starts from inside the app
         if: startsWith(matrix.platform, 'macos')

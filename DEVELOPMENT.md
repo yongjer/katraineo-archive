@@ -49,6 +49,7 @@ Prerequisites: Node 20+, Rust (stable), and the [Tauri system dependencies](http
 
 ```sh
 npm install
+npm run fetch:resources  # downloads the default model and KataGo binary (Linux/Windows) with SHA-256 checks
 npm run tauri dev        # desktop app with hot reload
 npm run tauri build      # installers in src-tauri/target/release/bundle
 npm test                 # unit tests
@@ -63,10 +64,11 @@ ESLint is not used: typescript-eslint needs TypeScript's JavaScript API, which T
 code before the Prettier and rustfmt reformatting in `git blame`, run
 `git config blame.ignoreRevsFile .git-blame-ignore-revs`.
 
-KataGo is bundled for Windows and Linux (`resources/KataGo`). For macOS, `scripts/build-katago-macos.sh` builds it
-from source (Metal on Apple Silicon, OpenCL on Intel) with its Homebrew libraries copied next to it, as CI does;
-run it once before `npm run tauri build` or `npm run tauri dev` on a Mac. Without a bundled KataGo the app falls
-back to one on `PATH` or in Homebrew's folders (`brew install katago`).
+The default model (`resources/models/b10c384h6nbttflrs.bin.gz`) and the Windows/Linux KataGo binaries are not committed
+to Git; run `npm run fetch:resources` once after cloning (CI caches them per `scripts/fetch-resources.mjs`). For macOS,
+`scripts/build-katago-macos.sh` builds KataGo from source (Metal on Apple Silicon, OpenCL on Intel) with its Homebrew
+libraries copied next to it, as CI does; run it once before `npm run tauri build` or `npm run tauri dev` on a Mac.
+Without a bundled KataGo the app falls back to one on `PATH` or in Homebrew's folders (`brew install katago`).
 
 On Linux the bundled `resources/KataGo/katago` is KataGo's own AppImage, so it needs FUSE (`libfuse2`). The packages
 install it in `usr/share/Katraineo` rather than with the other resources in `usr/lib/Katraineo`, because linuxdeploy (used

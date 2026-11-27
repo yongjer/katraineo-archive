@@ -8,6 +8,7 @@ import {
   aiMoveNow,
   analyzeExtra,
   checkForUpdates,
+  clearRecentFiles,
   copySgf,
   pasteSgf,
   selfplayToEnd,
@@ -16,6 +17,7 @@ import {
   getEngine,
   loadGame,
   openDialog,
+  openGamePath,
   playAt,
   redo,
   resetAnalysis,
@@ -46,6 +48,7 @@ function oneLine(s: string) {
 export function TopBar() {
   const mode = useStore((s) => s.mode);
   const toggles = useStore((s) => s.config.ui[s.mode]);
+  const recentFiles = useStore((s) => s.config.general.recent_files);
   const [menuOpen, setMenuOpen] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
   return (
@@ -60,6 +63,21 @@ export function TopBar() {
             <MenuItem label={t("menu:load")} shortcut={`${MOD_KEY}L`} onClick={() => void loadGame()} />
             <MenuItem label={t("menu:save")} shortcut={`${MOD_KEY}S`} onClick={() => void saveGame(false)} />
             <MenuItem label={t("menu:save-as")} shortcut={`${MOD_KEY}D`} onClick={() => void saveGame(true)} />
+            {platform.isDesktop && recentFiles.length > 0 && (
+              <>
+                <hr />
+                <div className="menu-section-label">{t("menu:recent")}</div>
+                {recentFiles.slice(0, 6).map((path) => (
+                  <MenuItem
+                    key={path}
+                    label={path.split(/[\\/]/).pop() ?? path}
+                    title={path}
+                    onClick={() => void openGamePath(path)}
+                  />
+                ))}
+                <MenuItem label={t("menu:recent-clear")} onClick={clearRecentFiles} />
+              </>
+            )}
             <hr />
             <MenuItem label={t("menu:settings")} shortcut="F8" onClick={() => openDialog("settings")} />
             <MenuItem label={t("menu:aisettings")} shortcut="F7" onClick={() => openDialog("ai")} />
@@ -181,10 +199,20 @@ function Dropdown({
   );
 }
 
-function MenuItem({ label, shortcut, onClick }: { label: string; shortcut?: string; onClick: () => void }) {
+function MenuItem({
+  label,
+  shortcut,
+  title,
+  onClick,
+}: {
+  label: string;
+  shortcut?: string;
+  title?: string;
+  onClick: () => void;
+}) {
   return (
-    <button className="menu-item" onClick={onClick}>
-      <span>{label}</span>
+    <button className="menu-item" title={title} onClick={onClick}>
+      <span className="menu-item-label">{label}</span>
       {shortcut && <kbd>{shortcut}</kbd>}
     </button>
   );

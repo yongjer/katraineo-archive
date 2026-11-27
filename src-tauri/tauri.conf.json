@@ -29,6 +29,27 @@
     "targets": "all",
     "category": "BoardGame",
     "shortDescription": "Go analysis and training with KataGo",
+    "fileAssociations": [
+      {
+        "ext": ["sgf"],
+        "name": "Smart Game Format",
+        "description": "Go game record (SGF)",
+        "mimeType": "application/x-go-sgf",
+        "role": "Editor"
+      },
+      {
+        "ext": ["gib"],
+        "name": "Tygem Go Game",
+        "description": "Go game record (GIB)",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["ngf"],
+        "name": "WBaduk Go Game",
+        "description": "Go game record (NGF)",
+        "role": "Viewer"
+      }
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

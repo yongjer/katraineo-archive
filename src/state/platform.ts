@@ -53,6 +53,12 @@ export interface Platform {
   makeTransport(settings: EngineSettings): EngineTransport;
   transportKind(settings: EngineSettings): string;
   openGameFile(): Promise<OpenedFile | null>;
+  /** Read a game file at a known disk path (recent files, OS file open). */
+  readGameFile(path: string): Promise<OpenedFile>;
+  /** Consume a game file path passed by the OS before the UI mounted. */
+  takePendingOpenFile(): Promise<string | null>;
+  /** Subscribe to game file paths forwarded by the OS while running (double-click, second instance). */
+  onOpenGameFile(cb: (path: string) => void): Promise<() => void>;
   /** Files dropped onto the window. Resolves to an unsubscribe function. */
   onFileDrop(cb: (file: OpenedFile) => void): Promise<() => void>;
   /** Save to `path`, or ask where to save when path is null. Returns the path written, or null if cancelled. */
@@ -179,6 +185,19 @@ const tauriPlatform: Platform = {
     if (!path || Array.isArray(path)) return null;
     const contents = await invoke<string>("read_game_file", { path });
     return { name: path.split(/[\\/]/).pop() ?? path, path, contents };
+  },
+  async readGameFile(path) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const contents = await invoke<string>("read_game_file", { path });
+    return { name: path.split(/[\\/]/).pop() ?? path, path, contents };
+  },
+  async takePendingOpenFile() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<string | null>("take_pending_open_file");
+  },
+  async onOpenGameFile(cb) {
+    const { listen } = await import("@tauri-apps/api/event");
+    return listen<string>("open-game-file", (e) => cb(e.payload));
   },
   async onFileDrop(cb) {
     const { getCurrentWebview } = await import("@tauri-apps/api/webview");
@@ -385,6 +404,15 @@ const browserPlatform: Platform = {
       };
       input.click();
     });
+  },
+  async readGameFile() {
+    throw new Error("Opening files by path needs the desktop app");
+  },
+  async takePendingOpenFile() {
+    return null;
+  },
+  async onOpenGameFile() {
+    return () => {};
   },
   async onFileDrop(cb) {
     const over = (e: DragEvent) => e.preventDefault();

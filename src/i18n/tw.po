@@ -1238,3 +1238,10 @@ msgstr "有新版本"
 
 msgid "check for updates"
 msgstr "啟動時檢查更新"
+
+#. recent files submenu
+msgid "menu:recent"
+msgstr "最近開啟"
+
+msgid "menu:recent-clear"
+msgstr "清除最近紀錄"

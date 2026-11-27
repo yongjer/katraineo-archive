@@ -14,6 +14,7 @@ import {
   init,
   loadGame,
   openDialog,
+  openGamePath,
   requestCloseDialog,
   playAt,
   redo,
@@ -202,10 +203,12 @@ export function App() {
     const stopDrop = platform.onFileDrop((f) => {
       if (/\.(sgf|gib|ngf)$/i.test(f.name)) loadGameFromString(f.contents, f.name, f.path);
     });
+    const stopOpen = platform.onOpenGameFile((path) => void openGamePath(path));
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("wheel", onWheel);
       void stopDrop.then((stop) => stop());
+      void stopOpen.then((stop) => stop());
     };
   }, []);
   if (!ready) return <div className="loading">Katraineo</div>;

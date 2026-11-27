@@ -34,7 +34,8 @@
         "version": "1.20.0",
         "load_fast_analysis": false,
         "load_sgf_rewind": true,
-        "check_for_updates": true
+        "check_for_updates": true,
+        "recent_files": []
     },
     "timer": {
         "byo_length": 30,

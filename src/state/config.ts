@@ -46,6 +46,7 @@ export interface AppConfig {
     anim_pv_time: number;
     debug_level: number;
     check_for_updates: boolean;
+    recent_files: string[];
   };
   ui: {
     play: AnalysisToggles;
@@ -104,6 +105,13 @@ export function parseSavedConfig(text: string | null): AppConfig {
   } catch {
     return defaults;
   }
+}
+
+/** Insert `path` at the front of the recent files list, deduplicated and capped to `limit`. */
+export function addRecentFile(list: string[], path: string, limit = 10): string[] {
+  const trimmed = path.trim();
+  if (!trimmed) return list;
+  return [trimmed, ...list.filter((p) => p !== trimmed)].slice(0, limit);
 }
 
 /** A saved config with something in it that is not a settings object at all (e.g. a damaged file): none of it applies. */

@@ -30,7 +30,7 @@ import { parseGameFile, parseSgf, writeSgf } from "../core/sgf";
 import { addTsumegoFrame } from "../core/tsumego";
 import { setLanguage } from "../ui/i18nLoader";
 import { sounds } from "../ui/sounds";
-import { isUnreadableConfig, parseSavedConfig, type AnalysisToggles, type AppConfig } from "./config";
+import { addRecentFile, isUnreadableConfig, parseSavedConfig, type AnalysisToggles, type AppConfig } from "./config";
 import { platform, type UpdateInfo, type UpdateProgress } from "./platform";
 
 export interface Status {
@@ -278,6 +278,8 @@ export async function init() {
   set({ config, ready: true, lang: config.general.lang });
   await startEngine();
   newGame(undefined, { fromConfig: true });
+  const pendingPath = await platform.takePendingOpenFile?.().catch(() => null);
+  if (pendingPath) await openGamePath(pendingPath);
   void platform.appVersion().then((currentVersion) => setUpdate({ currentVersion }));
   if (config.general.check_for_updates) void checkForUpdates(false);
 }
@@ -392,6 +394,19 @@ export function newGame(settings?: NewGameSettings, opts: { fromConfig?: boolean
   startGame(new Game(host, engine, { newGame: s, analyzeFast: true }), MODE_PLAY);
 }
 
+function recordRecentFile(path: string | null) {
+  if (!path) return;
+  const current = get().config.general.recent_files ?? [];
+  const next = addRecentFile(current, path);
+  if (next.length === current.length && next.every((v, i) => v === current[i])) return;
+  updateConfig((c) => void (c.general.recent_files = next));
+}
+
+export function clearRecentFiles() {
+  if (!get().config.general.recent_files.length) return;
+  updateConfig((c) => void (c.general.recent_files = []));
+}
+
 export function loadGameFromString(contents: string, filename: string, path: string | null) {
   try {
     const tree = parseGameFile(contents, filename);
@@ -409,8 +424,18 @@ export function loadGameFromString(contents: string, filename: string, path: str
       c.ui.players.B.type = PLAYER_HUMAN;
       c.ui.players.W.type = PLAYER_HUMAN;
     });
+    if (path) recordRecentFile(path);
     startGame(game, MODE_ANALYZE);
     setStatus(`${filename}`, "info");
+  } catch (e) {
+    setStatus(tf("Failed to load SGF", { error: String(e) }), "error");
+  }
+}
+
+export async function openGamePath(path: string) {
+  try {
+    const file = await platform.readGameFile(path);
+    loadGameFromString(file.contents, file.name, file.path);
   } catch (e) {
     setStatus(tf("Failed to load SGF", { error: String(e) }), "error");
   }
@@ -450,6 +475,7 @@ export async function saveGame(saveAs = false) {
     const path = await platform.saveTextFile(sgf, game.generateFilename(), saveAs ? null : game.sgfFilename);
     if (path) {
       game.sgfFilename = platform.isDesktop ? path : null;
+      if (platform.isDesktop) recordRecentFile(path);
       setStatus(tf("sgf written", { file_name: path }), "info");
     }
   } catch (e) {

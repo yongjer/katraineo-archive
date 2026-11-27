@@ -1307,3 +1307,10 @@ msgstr "Update available"
 
 msgid "check for updates"
 msgstr "Check for updates at startup"
+
+#. recent files submenu
+msgid "menu:recent"
+msgstr "Recent Files"
+
+msgid "menu:recent-clear"
+msgstr "Clear Recent Files"

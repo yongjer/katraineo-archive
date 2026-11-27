@@ -37,8 +37,9 @@ starts, and installs it from the menu (*Check for Updates*). Test builds of the 
   (On macOS 14 or earlier, opening it from Finder with right click → Open works as well.)
   If macOS says instead that Katraineo is damaged, run `xattr -dr com.apple.quarantine /Applications/Katraineo.app`
   in Terminal.
-* **Windows**: run the `.msi` or `-setup.exe` installer. SmartScreen may warn about an unknown publisher; choose
-  *More info* → *Run anyway*.
+  Each release also includes a `katraineo.rb` Homebrew Cask file (or use a tap with `--no-quarantine` to skip manual Gatekeeper steps).
+* **Windows**: run the `.msi` or `-setup.exe` installer (or use the `katraineo.json` Scoop manifest attached to each release).
+  SmartScreen may warn about an unknown publisher; choose *More info* → *Run anyway*.
 * **Linux**: install the `.deb`, or make the `.AppImage` executable and run it (this needs FUSE: on Ubuntu or Debian,
   `sudo apt install libfuse2t64`, or `libfuse2` on older versions).
 

@@ -31,20 +31,26 @@
     "shortDescription": "Go analysis and training with KataGo",
     "fileAssociations": [
       {
-        "ext": ["sgf"],
+        "ext": [
+          "sgf"
+        ],
         "name": "Smart Game Format",
         "description": "Go game record (SGF)",
         "mimeType": "application/x-go-sgf",
         "role": "Editor"
       },
       {
-        "ext": ["gib"],
+        "ext": [
+          "gib"
+        ],
         "name": "Tygem Go Game",
         "description": "Go game record (GIB)",
         "role": "Viewer"
       },
       {
-        "ext": ["ngf"],
+        "ext": [
+          "ngf"
+        ],
         "name": "WBaduk Go Game",
         "description": "Go game record (NGF)",
         "role": "Viewer"

@@ -43,7 +43,14 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
     let unlisten = () => {};
     void platform
       .onDownloadProgress((p) => {
-        setProgress((prev) => ({ ...prev, [p.name]: p }));
+        setProgress((prev) => {
+          if (p.cancelled) {
+            const next = { ...prev };
+            delete next[p.name];
+            return next;
+          }
+          return { ...prev, [p.name]: p };
+        });
         if (p.done) void refresh();
       })
       .then((u) => (unlisten = u));
@@ -83,7 +90,17 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
         // first human-like model: use it right away so the human-like AIs work
         if (m.humanlike && !humanlikeModel) onHumanlikeModel(path);
       })
-      .catch((e) => setProgress((prev) => ({ ...prev, [m.name]: { ...prev[m.name], done: true, error: String(e) } })));
+      .catch((e) => {
+        if (String(e) === "cancelled") {
+          setProgress((prev) => {
+            const next = { ...prev };
+            delete next[m.name];
+            return next;
+          });
+          return;
+        }
+        setProgress((prev) => ({ ...prev, [m.name]: { ...prev[m.name], done: true, error: String(e) } }));
+      });
   };
 
   const normal = files.filter((f) => !isHumanModel(f.path));
@@ -160,6 +177,14 @@ export function ModelPicker({ model, humanlikeModel, onModel, onHumanlikeModel }
                         <span>
                           {p.total ? `${mb(p.received)} / ${mb(p.total)}` : p.received ? mb(p.received) : "…"}
                         </span>
+                        <button
+                          className="text-button small"
+                          onClick={() => void platform.cancelModelDownload(m.url)}
+                          aria-label={t("unsaved:cancel")}
+                          title={t("unsaved:cancel")}
+                        >
+                          ✕
+                        </button>
                       </>
                     ) : (
                       <button

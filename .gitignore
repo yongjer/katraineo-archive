@@ -11,9 +11,26 @@ src-tauri/gen/
 KataGoData
 resources/KataGo/KataGoData
 
-# models other than the bundled one
+# models (downloaded by scripts/fetch-resources.mjs)
 resources/models/*.bin.gz
-!resources/models/b10c384h6nbttflrs.bin.gz
+
+# KataGo binaries & runtime DLLs (downloaded by scripts/fetch-resources.mjs)
+resources/KataGo/katago
+resources/KataGo/katago.exe
+resources/KataGo/cacert.pem
+resources/KataGo/bz2.dll
+resources/KataGo/libcrypto-3-x64.dll
+resources/KataGo/libssl-3-x64.dll
+resources/KataGo/msvcp140.dll
+resources/KataGo/msvcp140_1.dll
+resources/KataGo/msvcp140_2.dll
+resources/KataGo/msvcp140_atomic_wait.dll
+resources/KataGo/msvcp140_codecvt_ids.dll
+resources/KataGo/vcruntime140.dll
+resources/KataGo/vcruntime140_1.dll
+resources/KataGo/vcruntime140_threads.dll
+resources/KataGo/z.dll
+resources/KataGo/zip.dll
 
 # logs and editor files
 *.log

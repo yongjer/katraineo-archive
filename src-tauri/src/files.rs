@@ -4,10 +4,57 @@ use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::Mutex;
 use std::time::Duration;
 
 use encoding_rs::{Encoding, UTF_8};
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, State};
+
+/// A game record path passed from the OS before the frontend finished mounting.
+#[derive(Default)]
+pub struct PendingOpenFile(Mutex<Option<String>>);
+
+impl PendingOpenFile {
+    pub fn new(initial: Option<String>) -> Self {
+        Self(Mutex::new(initial))
+    }
+
+    pub fn set(&self, path: String) {
+        if let Ok(mut guard) = self.0.lock() {
+            *guard = Some(path);
+        }
+    }
+
+    pub fn take(&self) -> Option<String> {
+        self.0.lock().ok().and_then(|mut guard| guard.take())
+    }
+}
+
+/// True when `path` has a supported Go game record extension.
+pub fn is_game_record_path(path: &str) -> bool {
+    let lower = path.to_lowercase();
+    lower.ends_with(".sgf") || lower.ends_with(".gib") || lower.ends_with(".ngf")
+}
+
+/// Return the first non-flag CLI argument that looks like a game record path.
+pub fn first_game_file_arg<I, S>(args: I) -> Option<String>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
+    args.into_iter().find_map(|arg| {
+        let s = arg.as_ref();
+        if s.starts_with('-') || !is_game_record_path(s) {
+            return None;
+        }
+        Some(s.to_string())
+    })
+}
+
+#[tauri::command]
+pub fn take_pending_open_file(state: State<'_, PendingOpenFile>) -> Option<String> {
+    state.take()
+}
 
 /// Decode a game record the way pysgf does: Fox/GIB/NGF are UTF-8, otherwise trust the SGF CA[] property,
 /// and fall back to statistical detection.
@@ -170,6 +217,37 @@ pub fn keep_unreadable_config(app: AppHandle) -> Result<String, String> {
 pub fn save_config(app: AppHandle, contents: String) -> Result<(), String> {
     let path = config_path(&app)?;
     write_text_file(path.to_string_lossy().into_owned(), contents)
+}
+
+fn autosave_path(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    Ok(dir.join("autosave.sgf"))
+}
+
+#[tauri::command]
+pub fn save_autosave(app: AppHandle, contents: String) -> Result<(), String> {
+    let path = autosave_path(&app)?;
+    write_text_file(path.to_string_lossy().into_owned(), contents)
+}
+
+#[tauri::command]
+pub fn load_autosave(app: AppHandle) -> Result<Option<String>, String> {
+    let path = autosave_path(&app)?;
+    match fs::read_to_string(&path) {
+        Ok(s) => Ok(Some(s)),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(None),
+        Err(e) => Err(format!("Could not read {}: {e}", path.display())),
+    }
+}
+
+#[tauri::command]
+pub fn clear_autosave(app: AppHandle) -> Result<(), String> {
+    let path = autosave_path(&app)?;
+    match fs::remove_file(&path) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(format!("Could not remove {}: {e}", path.display())),
+    }
 }
 
 /// The largest game record "paste a link to an SGF" downloads.
@@ -376,5 +454,17 @@ mod tests {
         assert_eq!(names(&dir), ["config.broken-2.json", "config.broken.json"]);
         assert_eq!(fs::read_to_string(dir.join("config.broken.json")).unwrap(), "{ broken");
         let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn picks_first_game_record_from_cli_args() {
+        assert_eq!(
+            first_game_file_arg(["--flag", "notes.txt", "/games/match.SGF", "/games/other.gib"]),
+            Some("/games/match.SGF".into())
+        );
+        assert_eq!(first_game_file_arg(["-open.sgf", "readme.md"]), None);
+        assert!(is_game_record_path("game.gib"));
+        assert!(is_game_record_path("game.NGF"));
+        assert!(!is_game_record_path("game.txt"));
     }
 }

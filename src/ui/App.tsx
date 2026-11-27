@@ -15,11 +15,13 @@ import {
   loadGame,
   openDialog,
   requestCloseDialog,
+  requestFileDrop,
+  requestOpenGamePath,
+  requestWindowClose,
   playAt,
   redo,
   resetAnalysis,
   saveGame,
-  loadGameFromString,
   setMode,
   startRegionSelect,
   switchBranch,
@@ -200,12 +202,16 @@ export function App() {
     window.addEventListener("wheel", onWheel, { passive: true });
     // drop an .sgf / .gib / .ngf anywhere on the window to load it
     const stopDrop = platform.onFileDrop((f) => {
-      if (/\.(sgf|gib|ngf)$/i.test(f.name)) loadGameFromString(f.contents, f.name, f.path);
+      if (/\.(sgf|gib|ngf)$/i.test(f.name)) requestFileDrop(f);
     });
+    const stopOpen = platform.onOpenGameFile((path) => requestOpenGamePath(path));
+    const stopClose = platform.onCloseRequested(() => requestWindowClose());
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("wheel", onWheel);
       void stopDrop.then((stop) => stop());
+      void stopOpen.then((stop) => stop());
+      void stopClose.then((stop) => stop());
     };
   }, []);
   if (!ready) return <div className="loading">Katraineo</div>;

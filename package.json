@@ -13,6 +13,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "fetch:resources": "node scripts/fetch-resources.mjs",
     "tauri": "tauri"
   },
   "dependencies": {

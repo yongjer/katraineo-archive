@@ -13,15 +13,19 @@ import { t, tf } from "../core/i18n";
 import { ENGINE_BACKENDS, resolveEngineBackend } from "../core/engine";
 import { gameReport, REPORT_FILTERS } from "../core/report";
 import type { AppConfig } from "../state/config";
-import { platform } from "../state/platform";
+import { platform, type DownloadProgress } from "../state/platform";
 import {
   analyzeExtra,
+  discardAutosave,
+  getEngine,
   installUpdate,
-  newGame,
   openDialog,
+  recoverAutosave,
   requestCloseDialog,
+  requestNewGame,
+  requestSetupPosition,
+  resolveUnsaved,
   setDialogCloseGuard,
-  setupPosition,
   tsumegoFrame,
   updateConfig,
   updateTimerSettings,
@@ -29,7 +33,7 @@ import {
 } from "../state/store";
 import { LANGUAGES } from "./i18nLoader";
 import { ModelPicker } from "./ModelPicker";
-import { EVAL_COLORS } from "./theme";
+import { EVAL_COLORS, IS_MAC } from "./theme";
 
 /** `footer` stays in view below the scrolling body. */
 function Modal({
@@ -182,8 +186,8 @@ export function NewGameDialog() {
           disabled={!valid || !setupValid}
           onClick={() => {
             close();
-            if (mode === "newgame") newGame(settings());
-            else setupPosition(settings(), parseInt(setupMove, 10), parseFloat(setupScore));
+            if (mode === "newgame") requestNewGame(settings());
+            else requestSetupPosition(settings(), parseInt(setupMove, 10), parseFloat(setupScore));
           }}
         >
           {t(mode)}
@@ -206,6 +210,39 @@ export function SettingsDialog() {
   const e = draft.engine;
   const backend = resolveEngineBackend(e);
   const tr = draft.trainer;
+  const engine = getEngine();
+  const localEngineDead = backend === "local" && !!engine && engine.state === "dead";
+  const [cpuProgress, setCpuProgress] = useState<DownloadProgress | null>(null);
+  const [cpuError, setCpuError] = useState<string | null>(null);
+  useEffect(() => {
+    let unlisten = () => {};
+    void platform.onKatagoDownloadProgress((p) => setCpuProgress(p)).then((u) => (unlisten = u));
+    return () => unlisten();
+  }, []);
+  const browseKatago = async () => {
+    const path = await platform.pickFile({ title: t("engine:katago") });
+    if (path) edit((c) => void (c.engine.katago = path));
+  };
+  const browseConfig = async () => {
+    const path = await platform.pickFile({
+      title: t("engine:config"),
+      filterName: "KataGo config",
+      extensions: ["cfg"],
+    });
+    if (path) edit((c) => void (c.engine.config = path));
+  };
+  const downloadEigen = async () => {
+    setCpuError(null);
+    setCpuProgress({ name: "KataGo (CPU)", received: 0, total: null, done: false, error: null, path: null });
+    try {
+      const path = await platform.downloadEigenKatago();
+      setCpuProgress(null);
+      edit((c) => void (c.engine.katago = path));
+    } catch (err) {
+      setCpuProgress(null);
+      setCpuError(String(err));
+    }
+  };
   // Closing with unsaved changes asks first, instead of silently dropping them.
   const saved = (c: AppConfig) => JSON.stringify([c.general, c.engine, c.trainer]);
   const dirty = saved(draft) !== saved(config);
@@ -299,12 +336,42 @@ export function SettingsDialog() {
       </div>
       {backend === "local" && (
         <>
+          {platform.isDesktop && !IS_MAC && (
+            <div className={`engine-fallback ${localEngineDead ? "alert" : ""}`}>
+              <span>{localEngineDead ? t("engine:cpu-fallback:failed") : t("engine:cpu-fallback:hint")}</span>
+              {cpuProgress && !cpuProgress.done ? (
+                <span className="download-inline">
+                  <progress
+                    max={cpuProgress.total ?? undefined}
+                    value={cpuProgress.total ? cpuProgress.received : undefined}
+                  />
+                  <span>
+                    {cpuProgress.total
+                      ? `${Math.round(cpuProgress.received / 1e6)} / ${Math.round(cpuProgress.total / 1e6)} MB`
+                      : "…"}
+                  </span>
+                </span>
+              ) : (
+                <button className="text-button small" onClick={() => void downloadEigen()}>
+                  {t("engine:cpu-fallback:button")}
+                </button>
+              )}
+              {cpuError && <span className="engine-fallback-error">{cpuError}</span>}
+            </div>
+          )}
           <Field label={t("engine:katago")} hint={t("engine:katago:hint")}>
-            <input
-              value={e.katago}
-              onChange={(ev) => edit((c) => void (c.engine.katago = ev.target.value))}
-              spellCheck={false}
-            />
+            <span className="input-with-browse">
+              <input
+                value={e.katago}
+                onChange={(ev) => edit((c) => void (c.engine.katago = ev.target.value))}
+                spellCheck={false}
+              />
+              {platform.isDesktop && (
+                <button type="button" className="text-button small" onClick={() => void browseKatago()}>
+                  {t("settings:browse")}
+                </button>
+              )}
+            </span>
           </Field>
           <ModelPicker
             model={e.model}
@@ -331,11 +398,18 @@ export function SettingsDialog() {
             </>
           )}
           <Field label={t("engine:config")}>
-            <input
-              value={e.config}
-              onChange={(ev) => edit((c) => void (c.engine.config = ev.target.value))}
-              spellCheck={false}
-            />
+            <span className="input-with-browse">
+              <input
+                value={e.config}
+                onChange={(ev) => edit((c) => void (c.engine.config = ev.target.value))}
+                spellCheck={false}
+              />
+              {platform.isDesktop && (
+                <button type="button" className="text-button small" onClick={() => void browseConfig()}>
+                  {t("settings:browse")}
+                </button>
+              )}
+            </span>
           </Field>
         </>
       )}
@@ -908,8 +982,50 @@ export function UpdateDialog() {
   );
 }
 
+export function UnsavedDialog() {
+  const cancel = () => void resolveUnsaved("cancel");
+  const footer = (
+    <div className="modal-actions">
+      <button className="text-button" onClick={cancel}>
+        {t("unsaved:cancel")}
+      </button>
+      <button className="text-button unsaved-discard" onClick={() => void resolveUnsaved("discard")}>
+        {t("unsaved:discard")}
+      </button>
+      <button className="primary" onClick={() => void resolveUnsaved("save")}>
+        {t("unsaved:save")}
+      </button>
+    </div>
+  );
+  return (
+    <Modal title={t("unsaved:title")} onClose={cancel} footer={footer}>
+      <p>{t("unsaved:message")}</p>
+    </Modal>
+  );
+}
+
+export function RecoveryDialog() {
+  const footer = (
+    <div className="modal-actions">
+      <button className="text-button" onClick={discardAutosave}>
+        {t("recovery:discard")}
+      </button>
+      <button className="primary" onClick={recoverAutosave}>
+        {t("recovery:recover")}
+      </button>
+    </div>
+  );
+  return (
+    <Modal title={t("recovery:title")} onClose={discardAutosave} footer={footer}>
+      <p>{t("recovery:message")}</p>
+    </Modal>
+  );
+}
+
 export function Dialogs() {
   const dialog = useStore((s) => s.dialog);
+  if (dialog === "unsaved") return <UnsavedDialog />;
+  if (dialog === "recovery") return <RecoveryDialog />;
   if (dialog === "reanalyze") return <ReanalyzeDialog />;
   if (dialog === "report") return <ReportDialog />;
   if (dialog === "timer") return <TimerDialog />;

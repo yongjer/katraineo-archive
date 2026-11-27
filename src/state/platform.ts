@@ -20,6 +20,7 @@ export interface DownloadProgress {
   received: number;
   total: number | null;
   done: boolean;
+  cancelled?: boolean;
   error: string | null;
   path: string | null;
 }
@@ -44,7 +45,14 @@ export interface Platform {
   resolveModelEndpoint(url: string): Promise<string>;
   /** Download a model; resolves to the saved path. */
   downloadModel(name: string, url: string): Promise<string>;
+  /** Cancel an in-flight model download. */
+  cancelModelDownload(url: string): Promise<void>;
   onDownloadProgress(cb: (p: DownloadProgress) => void): Promise<() => void>;
+  /** Download and unpack KataGo's CPU (Eigen) fallback binary (Windows/Linux). */
+  downloadEigenKatago(): Promise<string>;
+  onKatagoDownloadProgress(cb: (p: DownloadProgress) => void): Promise<() => void>;
+  /** Open a native file picker and return the chosen path, or null if cancelled. */
+  pickFile(opts?: { title?: string; filterName?: string; extensions?: string[] }): Promise<string | null>;
   readClipboard(): Promise<string | null>;
   writeClipboard(text: string): Promise<void>;
   /** Fetch a game record from an http(s) URL (pasting a link to an SGF). */
@@ -53,6 +61,12 @@ export interface Platform {
   makeTransport(settings: EngineSettings): EngineTransport;
   transportKind(settings: EngineSettings): string;
   openGameFile(): Promise<OpenedFile | null>;
+  /** Read a game file at a known disk path (recent files, OS file open). */
+  readGameFile(path: string): Promise<OpenedFile>;
+  /** Consume a game file path passed by the OS before the UI mounted. */
+  takePendingOpenFile(): Promise<string | null>;
+  /** Subscribe to game file paths forwarded by the OS while running (double-click, second instance). */
+  onOpenGameFile(cb: (path: string) => void): Promise<() => void>;
   /** Files dropped onto the window. Resolves to an unsubscribe function. */
   onFileDrop(cb: (file: OpenedFile) => void): Promise<() => void>;
   /** Save to `path`, or ask where to save when path is null. Returns the path written, or null if cancelled. */
@@ -63,6 +77,18 @@ export interface Platform {
   /** Tell the user something they must not miss, in a dialog. */
   showWarning(message: string): Promise<void>;
   saveConfig(contents: string): Promise<void>;
+  /** Persist an autosave snapshot for crash recovery. */
+  saveAutosave(contents: string): Promise<void>;
+  /** Read an existing autosave snapshot, or null when none is stored. */
+  loadAutosave(): Promise<string | null>;
+  /** Remove any stored autosave snapshot. */
+  clearAutosave(): Promise<void>;
+  /** Update the native window title (or document.title in browser). */
+  setWindowTitle(title: string): Promise<void>;
+  /** Intercept window close: return true from `cb` to cancel immediate close. */
+  onCloseRequested(cb: () => boolean): Promise<() => void>;
+  /** Force-close the app window after confirmation. */
+  closeWindow(): Promise<void>;
   appVersion(): Promise<string>;
   /** Ask the release page for a newer version of the app: null when this one is the newest. */
   checkForUpdate(): Promise<UpdateInfo | null>;
@@ -154,9 +180,29 @@ const tauriPlatform: Platform = {
     const { invoke } = await import("@tauri-apps/api/core");
     return invoke<string>("download_model", { name, url });
   },
+  async cancelModelDownload(url) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("cancel_model_download", { url });
+  },
   async onDownloadProgress(cb) {
     const { listen } = await import("@tauri-apps/api/event");
     return listen<DownloadProgress>("model-download", (e) => cb(e.payload));
+  },
+  async downloadEigenKatago() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<string>("download_eigen_katago");
+  },
+  async onKatagoDownloadProgress(cb) {
+    const { listen } = await import("@tauri-apps/api/event");
+    return listen<DownloadProgress>("katago-download", (e) => cb(e.payload));
+  },
+  async pickFile(opts) {
+    const { open } = await import("@tauri-apps/plugin-dialog");
+    const filters = opts?.extensions?.length
+      ? [{ name: opts.filterName ?? "Files", extensions: opts.extensions }]
+      : undefined;
+    const path = await open({ multiple: false, directory: false, title: opts?.title, filters });
+    return typeof path === "string" ? path : null;
   },
   async readClipboard() {
     const { readText } = await import("@tauri-apps/plugin-clipboard-manager");
@@ -179,6 +225,19 @@ const tauriPlatform: Platform = {
     if (!path || Array.isArray(path)) return null;
     const contents = await invoke<string>("read_game_file", { path });
     return { name: path.split(/[\\/]/).pop() ?? path, path, contents };
+  },
+  async readGameFile(path) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    const contents = await invoke<string>("read_game_file", { path });
+    return { name: path.split(/[\\/]/).pop() ?? path, path, contents };
+  },
+  async takePendingOpenFile() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<string | null>("take_pending_open_file");
+  },
+  async onOpenGameFile(cb) {
+    const { listen } = await import("@tauri-apps/api/event");
+    return listen<string>("open-game-file", (e) => cb(e.payload));
   },
   async onFileDrop(cb) {
     const { getCurrentWebview } = await import("@tauri-apps/api/webview");
@@ -217,6 +276,32 @@ const tauriPlatform: Platform = {
   async saveConfig(contents) {
     const { invoke } = await import("@tauri-apps/api/core");
     await invoke("save_config", { contents });
+  },
+  async saveAutosave(contents) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("save_autosave", { contents });
+  },
+  async loadAutosave() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<string | null>("load_autosave");
+  },
+  async clearAutosave() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("clear_autosave");
+  },
+  async setWindowTitle(title) {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    await getCurrentWindow().setTitle(title);
+  },
+  async onCloseRequested(cb) {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    return getCurrentWindow().onCloseRequested((e) => {
+      if (cb()) e.preventDefault();
+    });
+  },
+  async closeWindow() {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window");
+    await getCurrentWindow().destroy();
   },
   async appVersion() {
     const { getVersion } = await import("@tauri-apps/api/app");
@@ -354,8 +439,18 @@ const browserPlatform: Platform = {
   async downloadModel() {
     throw new Error("Model downloads need the desktop app");
   },
+  async cancelModelDownload() {},
   async onDownloadProgress() {
     return () => {};
+  },
+  async downloadEigenKatago() {
+    throw new Error("KataGo downloads need the desktop app");
+  },
+  async onKatagoDownloadProgress() {
+    return () => {};
+  },
+  async pickFile() {
+    return null;
   },
   async readClipboard() {
     return navigator.clipboard.readText();
@@ -385,6 +480,15 @@ const browserPlatform: Platform = {
       };
       input.click();
     });
+  },
+  async readGameFile() {
+    throw new Error("Opening files by path needs the desktop app");
+  },
+  async takePendingOpenFile() {
+    return null;
+  },
+  async onOpenGameFile() {
+    return () => {};
   },
   async onFileDrop(cb) {
     const over = (e: DragEvent) => e.preventDefault();
@@ -431,6 +535,40 @@ const browserPlatform: Platform = {
     } catch {
       /* storage unavailable */
     }
+  },
+  async saveAutosave(contents) {
+    try {
+      localStorage.setItem("katraineo-autosave", contents);
+    } catch {
+      /* storage unavailable */
+    }
+  },
+  async loadAutosave() {
+    try {
+      return localStorage.getItem("katraineo-autosave");
+    } catch {
+      return null;
+    }
+  },
+  async clearAutosave() {
+    try {
+      localStorage.removeItem("katraineo-autosave");
+    } catch {
+      /* storage unavailable */
+    }
+  },
+  async setWindowTitle(title) {
+    if (typeof document !== "undefined") document.title = title;
+  },
+  async onCloseRequested(cb) {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (cb()) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  },
+  async closeWindow() {
+    window.close();
   },
   async appVersion() {
     return packageJson.version;

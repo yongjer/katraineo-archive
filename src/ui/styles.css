@@ -810,6 +810,47 @@ kbd {
   gap: 6px;
 }
 
+.input-with-browse {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.input-with-browse input {
+  flex: 1;
+  min-width: 0;
+}
+
+.engine-fallback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--box-light);
+  background: rgba(0, 0, 0, 0.16);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.engine-fallback.alert {
+  border-color: var(--orange);
+  color: var(--text);
+}
+
+.engine-fallback-error {
+  width: 100%;
+  color: #ff7a7a;
+}
+
+.download-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .threshold-table {
   display: grid;
   grid-template-columns: 1fr 0.5fr 0.5fr 0.5fr 0.8fr;

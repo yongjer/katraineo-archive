@@ -17,6 +17,16 @@ export const DOWNLOADABLE_MODELS: ModelEntry[] = [
     sizeMb: 99,
   },
   {
+    name: "Medium transformer model (b10c512)",
+    url: "https://github.com/lightvector/KataGo/releases/download/v1.17.1/b10c512h8nbt3tflrs-fson-silu-rsnh.bin.gz",
+    sizeMb: 94,
+  },
+  {
+    name: "Large transformer model (b11c768)",
+    url: "https://github.com/lightvector/KataGo/releases/download/v1.17.1/b11c768h12nbt3tflrs-fson-silu.bin.gz",
+    sizeMb: 212,
+  },
+  {
     name: "old 15 block model",
     url: "https://github.com/lightvector/KataGo/releases/download/v1.3.2/g170e-b15c192-s1672170752-d466197061.txt.gz",
     sizeMb: 48,
@@ -35,14 +45,6 @@ export const KNOWN_MODELS: ModelEntry[] = [
   {
     name: "Small transformer model (b10c384)",
     url: "https://github.com/lightvector/KataGo/releases/download/v1.17.1/b10c384h6nbttflrs.bin.gz",
-  },
-  {
-    name: "Medium transformer model (b10c512)",
-    url: "https://github.com/lightvector/KataGo/releases/download/v1.17.1/b10c512h8nbt3tflrs-fson-silu-rsnh.bin.gz",
-  },
-  {
-    name: "Large transformer model (b11c768)",
-    url: "https://github.com/lightvector/KataGo/releases/download/v1.17.1/b11c768h12nbt3tflrs-fson-silu.bin.gz",
   },
   {
     name: "Recommended 18b model",

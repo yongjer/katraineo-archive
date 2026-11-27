@@ -61,6 +61,8 @@ pub fn run() {
             models::list_models,
             models::resolve_model_endpoint,
             models::download_model,
+            models::cancel_model_download,
+            models::download_eigen_katago,
             updates::update_check,
             updates::update_install,
         ])

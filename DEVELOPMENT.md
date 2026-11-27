@@ -175,7 +175,10 @@ To release:
    `v<version>` on that commit does the same as `draft`.) The run first checks that this version has no tag yet, so if
    the version was not set, it fails at once rather than after the builds.
 3. CI builds the installers, runs the end-to-end tests, signs the installers for the updater, writes `latest.json`, tags
-   the commit `v<version>`, and creates a release with all of them. With `publish` it is published at once as the
+   the commit `v<version>`, and creates a release with all of them. It also runs `scripts/dist-manifests.mjs` to attach
+   a Homebrew Cask (`katraineo.rb`) and a Scoop manifest (`katraineo.json`), and if the repository secret
+   `HOMEBREW_TAP_TOKEN` is set, a `publish` release automatically pushes `Casks/katraineo.rb` to
+   `vars.HOMEBREW_TAP_REPO` (default `<owner>/homebrew-tap`). With `publish` it is published at once as the
    latest release, and every installed copy is offered it. A `draft` is checked and published by hand, **not as a
    pre-release**: the app reads `releases/latest/download/latest.json`, and GitHub's "latest" release is never a
    pre-release.

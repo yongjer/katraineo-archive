@@ -1342,3 +1342,16 @@ msgstr "Recover"
 
 msgid "recovery:discard"
 msgstr "Discard"
+
+#. engine setup & CPU fallback
+msgid "settings:browse"
+msgstr "Browse…"
+
+msgid "engine:cpu-fallback:hint"
+msgstr "No compatible GPU? You can switch to KataGo's CPU (Eigen) build."
+
+msgid "engine:cpu-fallback:failed"
+msgstr "Local KataGo failed to start. Try downloading the CPU (Eigen) build instead."
+
+msgid "engine:cpu-fallback:button"
+msgstr "Download CPU (Eigen) KataGo"

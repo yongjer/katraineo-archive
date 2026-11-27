@@ -20,6 +20,7 @@ export interface DownloadProgress {
   received: number;
   total: number | null;
   done: boolean;
+  cancelled?: boolean;
   error: string | null;
   path: string | null;
 }
@@ -44,7 +45,14 @@ export interface Platform {
   resolveModelEndpoint(url: string): Promise<string>;
   /** Download a model; resolves to the saved path. */
   downloadModel(name: string, url: string): Promise<string>;
+  /** Cancel an in-flight model download. */
+  cancelModelDownload(url: string): Promise<void>;
   onDownloadProgress(cb: (p: DownloadProgress) => void): Promise<() => void>;
+  /** Download and unpack KataGo's CPU (Eigen) fallback binary (Windows/Linux). */
+  downloadEigenKatago(): Promise<string>;
+  onKatagoDownloadProgress(cb: (p: DownloadProgress) => void): Promise<() => void>;
+  /** Open a native file picker and return the chosen path, or null if cancelled. */
+  pickFile(opts?: { title?: string; filterName?: string; extensions?: string[] }): Promise<string | null>;
   readClipboard(): Promise<string | null>;
   writeClipboard(text: string): Promise<void>;
   /** Fetch a game record from an http(s) URL (pasting a link to an SGF). */
@@ -172,9 +180,29 @@ const tauriPlatform: Platform = {
     const { invoke } = await import("@tauri-apps/api/core");
     return invoke<string>("download_model", { name, url });
   },
+  async cancelModelDownload(url) {
+    const { invoke } = await import("@tauri-apps/api/core");
+    await invoke("cancel_model_download", { url });
+  },
   async onDownloadProgress(cb) {
     const { listen } = await import("@tauri-apps/api/event");
     return listen<DownloadProgress>("model-download", (e) => cb(e.payload));
+  },
+  async downloadEigenKatago() {
+    const { invoke } = await import("@tauri-apps/api/core");
+    return invoke<string>("download_eigen_katago");
+  },
+  async onKatagoDownloadProgress(cb) {
+    const { listen } = await import("@tauri-apps/api/event");
+    return listen<DownloadProgress>("katago-download", (e) => cb(e.payload));
+  },
+  async pickFile(opts) {
+    const { open } = await import("@tauri-apps/plugin-dialog");
+    const filters = opts?.extensions?.length
+      ? [{ name: opts.filterName ?? "Files", extensions: opts.extensions }]
+      : undefined;
+    const path = await open({ multiple: false, directory: false, title: opts?.title, filters });
+    return typeof path === "string" ? path : null;
   },
   async readClipboard() {
     const { readText } = await import("@tauri-apps/plugin-clipboard-manager");
@@ -411,8 +439,18 @@ const browserPlatform: Platform = {
   async downloadModel() {
     throw new Error("Model downloads need the desktop app");
   },
+  async cancelModelDownload() {},
   async onDownloadProgress() {
     return () => {};
+  },
+  async downloadEigenKatago() {
+    throw new Error("KataGo downloads need the desktop app");
+  },
+  async onKatagoDownloadProgress() {
+    return () => {};
+  },
+  async pickFile() {
+    return null;
   },
   async readClipboard() {
     return navigator.clipboard.readText();

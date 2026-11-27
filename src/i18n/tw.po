@@ -1273,3 +1273,16 @@ msgstr "復原"
 
 msgid "recovery:discard"
 msgstr "捨棄"
+
+#. engine setup & CPU fallback
+msgid "settings:browse"
+msgstr "瀏覽…"
+
+msgid "engine:cpu-fallback:hint"
+msgstr "沒有相容的 GPU？可切換為 KataGo CPU（Eigen）版本。"
+
+msgid "engine:cpu-fallback:failed"
+msgstr "本機 KataGo 啟動失敗，建議改下載 CPU（Eigen）版本執行。"
+
+msgid "engine:cpu-fallback:button"
+msgstr "下載 CPU（Eigen）版 KataGo"

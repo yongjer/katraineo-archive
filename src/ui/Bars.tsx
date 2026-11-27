@@ -272,6 +272,11 @@ export function ControlsBar() {
       <div className={`status ${status?.level ?? ""}`} title={status?.message}>
         {status?.message.replace(/\n/g, " ")}
       </div>
+      {engineStopped && (
+        <button className="text-button small" onClick={() => openDialog("settings")}>
+          {t("engine settings")}
+        </button>
+      )}
       <button
         className="engine-dot"
         style={{ background: engineColor }}

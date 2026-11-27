@@ -15,6 +15,7 @@
 * **Built-in model manager & signed auto-updates** — Download human-like, medium/large transformer (`b10c512`, `b11c768`), and latest/strongest distributed models right inside the app (with progress and cancellation), and stay up to date via signed in-app updates.
 * **Safe editing workflow** — Protects unsaved games, notes, and branches before replacing or closing, automatically saves recovery snapshots on disk, and writes files atomically with full charset detection.
 * **Focused Go training & deep analysis** — Instant point-loss feedback dots, teaching mode with automatic mistake undo, calibrated & human-like AI opponents, performance reports by game phase, tsumego frames, region-of-interest search, and insert mode.
+* **Agent & automation friendly** — Ships with a UI-free TypeScript core (`src/core/`), a local browser engine bridge (`scripts/engine-bridge.mjs`), single-instance CLI file opening, WebDriver E2E harness, and semantic ARIA roles for AI coding and browser/desktop agents.
 * **Broad format & language support** — Reads and writes `.sgf` (including saved `KT` analysis caches), `.gib`, and `.ngf` files, imports games via drag-and-drop or clipboard URL, and ships with 11 UI languages.
 
 ## Table of Contents
@@ -24,6 +25,7 @@
 - [Play & Train Against AI](#ai)
 - [Analysis Tools](#analysis)
 - [Keyboard and Mouse Shortcuts](#keyboard)
+- [For Agentic AI Users & Automation](#agentic)
 - [FAQ](#faq)
 - [Development & Credits](#credits)
 
@@ -162,6 +164,37 @@ Deep analysis & study actions (*Analysis Options*):
 | <kbd>Ctrl</kbd> + <kbd>c</kbd> | Copy the current game as SGF to the clipboard |
 
 On macOS, <kbd>Cmd</kbd> works wherever this table lists <kbd>Ctrl</kbd>.
+
+## <a name="agentic"></a> For Agentic AI Users & Automation
+
+Katraineo is structured so AI coding agents, browser agents, and automated Go workflows can use, test, and extend it
+reliably without brittle workarounds:
+
+* **Open games from the CLI (single-instance handoff)**: Pass any `.sgf`, `.gib`, or `.ngf` file path directly to the
+  `katraineo` executable (`katraineo path/to/game.sgf`). If Katraineo is already running, the existing window focuses
+  and loads the game instead of spawning a duplicate KataGo process.
+* **Headless TypeScript core (`src/core/`)**: All Go rules, SGF/GIB/NGF parsing and serialization (`sgf.ts`), game tree
+  & analysis bookkeeping (`game.ts`, `gameNode.ts`), KataGo JSON-lines client (`engine.ts`), AI strategies (`ai.ts`),
+  performance reports (`report.ts`), and tsumego framing (`tsumego.ts`) have zero UI or Tauri dependencies. Plug in any
+  `EngineTransport` (such as Node `child_process` or WebSocket) for scripted batch review or custom AI agents.
+* **Browser-agent mode (Playwright / CDP)**: Run the full React UI in any standard browser with a real local KataGo
+  process via the token-authenticated localhost bridge (or connect directly to a remote `ws://`/`wss://` KataGo server):
+  ```sh
+  npm run dev
+  node scripts/engine-bridge.mjs   # listens on 127.0.0.1:8765 and prints the tokenized URL
+  ```
+* **Native desktop WebDriver automation**: `e2e/smoke.mjs` and `e2e/webdriver.mjs` drive the installed desktop app
+  through `tauri-driver` + `WebKitWebDriver` (Linux) and `msedgedriver` + WebView2 (Windows). Interactive controls expose
+  semantic ARIA roles and labels (`role="tablist"`, `role="tree"`, `role="dialog"`, `aria-label` on menus and inputs).
+* **Fast non-interactive setup & verification (for coding agents)**:
+  ```sh
+  npm ci && npm run fetch:resources
+  npm run typecheck && npm run lint && npm run format:check && npm test
+  cargo fmt --manifest-path src-tauri/Cargo.toml --check
+  cargo test --manifest-path src-tauri/Cargo.toml
+  cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+  ```
+  Real-engine end-to-end tests can also be run headlessly with `KATAGO_E2E=1 npx vitest run tests-ts/engine.e2e.test.ts tests-ts/selfplay.e2e.test.ts`.
 
 ## <a name="faq"></a> FAQ
 
